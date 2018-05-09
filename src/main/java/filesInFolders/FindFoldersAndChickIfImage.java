@@ -1,52 +1,66 @@
 package filesInFolders;
 
-import javax.activation.MimetypesFileTypeMap;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class FindFoldersAndChickIfImage {
   public static void main(String[] args) {
 
-//    String filepath = "E:/Fotolia/Natur & Tier & Umwelt/Wolfi mit Thermometer_javier brosch - Fotolia.com.jpg";
-//    File f = new File(filepath);
-//    MimetypesFileTypeMap mediatype = new MimetypesFileTypeMap();
-//    mediatype.addMimeTypes("image/psd psd");
-//    String mimetype= mediatype.getContentType(f);
-//
-//    String type = mimetype.split("/")[0];
-//    if(type.equals("image"))
-//      System.out.println("It's an image");
-//    else
-//      System.out.println("It's NOT an image");
+//    createDirectory("e:/mahmoud");
 
-    String path = "e:";
+    String path = "E:";
 
-      namePrint(path, "", "");
+    namePrint(path, "", "");
 
   }
 
-  public static void namePrint(String path, String space, String dir) throws NullPointerException {
+  private static void namePrint(String path, String space, String dir) throws NullPointerException {
     File folder = new File(path);
     String spa = space + dir + "  ";
     File[] listOfFiles = folder.listFiles();
     try {
-      for (int i = 0; i < listOfFiles.length; i++) {
-        if (listOfFiles[i].isDirectory()) {
-          System.out.println(spa + listOfFiles[i].getName() + "  ---->  " + path);
-          namePrint(path + "/" + listOfFiles[i].getName(), spa, " |");
-        } else if (listOfFiles[i].isFile()) {
-          System.out.print(spa + listOfFiles[i].getName());
-          System.out.println("  " + path + "/" + listOfFiles[i].getName());
+
+      if (listOfFiles != null) {
+        for (File file : listOfFiles) {
+          if(file.isDirectory()){
+            System.out.println(spa + file.getName() + "  ---->  " + path);
+            namePrint(path + "/" + file.getName() , spa, " |");
+          }else if(file.isFile()){
+            System.out.print(spa + file.getName());
+            System.out.println("  " + path + "/" + file.getName());
+          }
         }
       }
-    }catch (NullPointerException e){
+    } catch (NullPointerException e) {
       System.out.println("path not found ... redirect to e:");
 //      namePrint("e:", "", "");
     }
   }
 
 
-    public static boolean isImage (File file){
-      System.out.println(file.getName());
-      return true;
+
+  /**
+   * create Folder
+   *
+   * @param pathName: String path new Folder
+   */
+  private static void createDirectory(String pathName) {
+    Path path = Paths.get(pathName);
+    if (!Files.exists(path)) {
+      try {
+        Files.createDirectory(path);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
     }
   }
+
+
+  public static boolean isImage(File file) {
+    System.out.println(file.getName());
+    return true;
+  }
+}

@@ -4,13 +4,8 @@ import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.iptc.IptcDirectory;
-import com.sun.org.apache.xml.internal.dtm.ref.sax2dtm.SAX2DTM;
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.Size;
-import org.opencv.highgui.Highgui;
-import org.opencv.imgproc.Imgproc;
 
+import javax.activation.MimetypesFileTypeMap;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
@@ -28,10 +23,10 @@ import java.util.List;
 
 public class ImageProcessing {
   public static void main(String[] args) throws IOException {
-    String n="01";
-    String org = "e:/"+n+"-image.jpg", compressed = "e:/"+n+"-compressed.jpg", watermark = "e:/"+n+"-watermark.jpg",
-    watermarkImage = "e:/"+n+"-watermarkImage.jpg";
-    String waterImage = "e:/CodeJavaLogo.png";
+    String n = "02";
+    String org = "e:/" + n + "-image.jpg", compressed = "e:/" + n + "-compressed.jpg", watermark = "e:/" + n + "-watermark.jpg",
+      watermarkImage = "e:/" + n + "-watermarkImage.jpg";
+    String waterImage = "E:/foloParent/tmp/logo.png";
     File filename = new File(org);
     File desFileCompress = new File(compressed);
     File desFileWatermark = new File(watermark);
@@ -39,9 +34,9 @@ public class ImageProcessing {
 
     File inWaterImageFile = new File(waterImage);
 //    readImageMetadata(filename);
-    creatImageThump(filename,desFileCompress);
-    addTextWatermark("Press Oldenburg",desFileCompress,desFileWatermark);
-    addImageWatermark(inWaterImageFile,desFileCompress,desFileWatermarkImage);
+    compressImageThump(filename, desFileCompress);
+    addTextWatermark("Press Oldenburg", desFileCompress, desFileWatermark);
+    addImageWatermark(inWaterImageFile, desFileCompress, desFileWatermarkImage);
   }
 
 
@@ -56,13 +51,13 @@ public class ImageProcessing {
 //  }
 
 
-  public static void creatImageThump(File imageFile,File compressedImageFile) throws IOException {
+  private static void compressImageThump(File imageFile, File compressedImageFile) throws IOException {
     BufferedImage image = ImageIO.read(imageFile);
 
     OutputStream os = new FileOutputStream(compressedImageFile);
 
     Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpg");
-    ImageWriter writer = (ImageWriter) writers.next();
+    ImageWriter writer =  writers.next();
 
     ImageOutputStream ios = ImageIO.createImageOutputStream(os);
     writer.setOutput(ios);
@@ -80,24 +75,13 @@ public class ImageProcessing {
 
 
   /**
-   * @param image Image File.
+   * Add text watermark to Image
    *
-   * @throws IOException              if you don't enter an data type amount for the voltage
-   * @throws ImageProcessingException if you giv wrong file type
+   * @param text            : string watermark text.
+   * @param sourceImageFile : Original image
+   * @param destImageFile   : where to write processed image
    */
-  public static void readImageMetadata(File image) {
-    try {
-      Metadata metadata = ImageMetadataReader.readMetadata(image);
-      List<String> keyword = metadata.getFirstDirectoryOfType(IptcDirectory.class).getKeywords();
-      System.out.println(keyword);
-    } catch (ImageProcessingException e) {
-      System.out.println(e);
-    } catch (IOException ioE) {
-      System.out.println(ioE);
-    }
-  }
-
-  public static void addTextWatermark(String text, File sourceImageFile, File destImageFile) {
+  private static void addTextWatermark(String text, File sourceImageFile, File destImageFile) {
     try {
       BufferedImage sourceImage = ImageIO.read(sourceImageFile);
       Graphics2D g2d = (Graphics2D) sourceImage.getGraphics();
@@ -123,11 +107,18 @@ public class ImageProcessing {
       System.out.println("The tex watermark is added to the image.");
 
     } catch (IOException ex) {
-      System.err.println(ex);
+      ex.printStackTrace();
     }
   }
 
-  static void addImageWatermark(File watermarkImageFile, File sourceImageFile, File destImageFile) {
+  /**
+   * Add image watermark to Image
+   *
+   * @param watermarkImageFile :File path to Logo image.
+   * @param sourceImageFile    :File Original image
+   * @param destImageFile      :File where to write processed image
+   */
+  private static void addImageWatermark(File watermarkImageFile, File sourceImageFile, File destImageFile) {
     try {
       BufferedImage sourceImage = ImageIO.read(sourceImageFile);
       BufferedImage watermarkImage = ImageIO.read(watermarkImageFile);
@@ -150,7 +141,40 @@ public class ImageProcessing {
       System.out.println("The image watermark is added to the image.");
 
     } catch (IOException ex) {
-      System.err.println(ex);
+      System.err.println("addImageWatermark :" + ex);
+    }
+  }
+
+
+  /**
+   * @param image Image File.
+   */
+  private static void readImageMetadata(File image) {
+    try {
+      Metadata metadata = ImageMetadataReader.readMetadata(image);
+      List<String> keyword = metadata.getFirstDirectoryOfType(IptcDirectory.class).getKeywords();
+      System.out.println(keyword);
+    } catch (ImageProcessingException | IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * @param filePath file path String.
+   * @return boolean true : if image, false : if not Image
+   */
+  private static boolean isImage(String filePath) {
+    File f = new File(filePath);
+    MimetypesFileTypeMap mediatype = new MimetypesFileTypeMap();
+    mediatype.addMimeTypes("image/psd psd");
+    String mimetype = mediatype.getContentType(f);
+    String type = mimetype.split("/")[0];
+    if (type.equals("image")) {
+      System.out.println("It's an image");
+      return false;
+    } else {
+      System.out.println("It's NOT an image");
+      return true;
     }
   }
 
