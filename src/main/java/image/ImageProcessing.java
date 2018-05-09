@@ -5,6 +5,7 @@ import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.iptc.IptcDirectory;
 
+
 import javax.activation.MimetypesFileTypeMap;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -14,63 +15,64 @@ import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.Iterator;
 import java.util.List;
 
 public class ImageProcessing {
-  public static void main(String[] args) throws IOException {
-    String n = "02";
-    String org = "e:/" + n + "-image.jpg", compressed = "e:/" + n + "-compressed.jpg", watermark = "e:/" + n + "-watermark.jpg",
-      watermarkImage = "e:/" + n + "-watermarkImage.jpg";
+  public static void main(String[] args)  {
+    String drive = "E:/Fotolia/Hintergründe/",
+      n = "",
+      orgName = "Abstraktes Muster_aSuruwataRi_Fotolia",
+      type = ".jpg";
+
+    String prefix = drive + n + orgName;
+
+    String org = prefix + type,
+      compressed = prefix + "-c" + type,
+      watermark = prefix + "-wmT" + type,
+      watermarkImage = prefix + "-wmI" + type;
+
     String waterImage = "E:/foloParent/tmp/logo.png";
+
     File filename = new File(org);
     File desFileCompress = new File(compressed);
     File desFileWatermark = new File(watermark);
     File desFileWatermarkImage = new File(watermarkImage);
-
     File inWaterImageFile = new File(waterImage);
-//    readImageMetadata(filename);
-    compressImageThump(filename, desFileCompress);
-    addTextWatermark("Press Oldenburg", desFileCompress, desFileWatermark);
-    addImageWatermark(inWaterImageFile, desFileCompress, desFileWatermarkImage);
+
+    readImageMetadata(filename);
+//    compressImageThump(filename, desFileCompress);
+//    addTextWatermark("Press Oldenburg", desFileCompress, desFileWatermark);
+//    addImageWatermark(inWaterImageFile, desFileCompress, desFileWatermarkImage);
+//
   }
 
 
-//  public static void imagePyrDown() {
-//    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-//    Mat source = Highgui.imread("e:/compress.jpg", Highgui.CV_LOAD_IMAGE_COLOR);
-//
-//    Mat destination = new Mat(source.rows() / 2, source.cols() / 2, source.type());
-//    destination = source;
-//    Imgproc.pyrDown(source, destination, new Size(source.cols() / 2, source.rows() / 2));
-//    Highgui.imwrite("e:/pyrDown.jpg", destination);
-//  }
+  private static void compressImageThump(File imageFile, File compressedImageFile)  {
+    try {
+      BufferedImage image = ImageIO.read(imageFile);
 
+      OutputStream os = new FileOutputStream(compressedImageFile);
 
-  private static void compressImageThump(File imageFile, File compressedImageFile) throws IOException {
-    BufferedImage image = ImageIO.read(imageFile);
+      Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpg");
+      ImageWriter writer = writers.next();
 
-    OutputStream os = new FileOutputStream(compressedImageFile);
+      ImageOutputStream ios = ImageIO.createImageOutputStream(os);
+      writer.setOutput(ios);
 
-    Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpg");
-    ImageWriter writer =  writers.next();
+      ImageWriteParam param = writer.getDefaultWriteParam();
 
-    ImageOutputStream ios = ImageIO.createImageOutputStream(os);
-    writer.setOutput(ios);
+      param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+      param.setCompressionQuality(0.2f);
+      writer.write(null, new IIOImage(image, null, null), param);
 
-    ImageWriteParam param = writer.getDefaultWriteParam();
-
-    param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-    param.setCompressionQuality(0.2f);
-    writer.write(null, new IIOImage(image, null, null), param);
-
-    os.close();
-    ios.close();
-    writer.dispose();
+      os.close();
+      ios.close();
+      writer.dispose();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
 
@@ -147,6 +149,8 @@ public class ImageProcessing {
 
 
   /**
+   * Read keywords from image metadata
+   *
    * @param image Image File.
    */
   private static void readImageMetadata(File image) {
@@ -155,7 +159,7 @@ public class ImageProcessing {
       List<String> keyword = metadata.getFirstDirectoryOfType(IptcDirectory.class).getKeywords();
       System.out.println(keyword);
     } catch (ImageProcessingException | IOException e) {
-      e.printStackTrace();
+      System.out.println("can't find the file ...");
     }
   }
 
@@ -176,6 +180,18 @@ public class ImageProcessing {
       System.out.println("It's NOT an image");
       return true;
     }
+  }
+
+
+  public static void imagePyrDown() {
+//    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+//    Mat source = Highgui.imread("e:/02-compressed.jpg", Highgui.CV_LOAD_IMAGE_COLOR);
+//
+//    Mat destination = new Mat(source.rows() / 2, source.cols() / 2, source.type());
+////    Mat destination = new Mat(source.rows() / 2, source.cols() / 2, source.type());
+//    destination = source;
+//    Imgproc.pyrDown(source, destination, new Size(source.cols() / 2, source.rows() / 2));
+//    Highgui.imwrite("e:/pyrDown.jpg", destination);
   }
 
 
