@@ -1,4 +1,4 @@
-package pressBiro;
+package de.stadt.presse.util;
 
 import java.io.File;
 import java.io.IOException;

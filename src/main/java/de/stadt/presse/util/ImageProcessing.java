@@ -1,4 +1,4 @@
-package pressBiro;
+package de.stadt.presse.util;
 
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;

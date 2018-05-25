@@ -1,12 +1,5 @@
-package com.company;
+package tmp.company;
 
-
-import org.w3c.dom.ls.LSException;
-
-import javax.swing.*;
-import javax.xml.soap.Node;
-import java.util.LinkedList;
-import java.util.List;
 
 public class Nodes {
 
