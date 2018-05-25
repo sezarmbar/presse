@@ -13,6 +13,17 @@ spring:
     initialize: false
   jpa:
     database-platform: org.hibernate.dialect.MySQLDialect
+    show-sql: true
+logging:
+  file: logs/dev_app.log
+  pattern:
+    console: "%d %-5level %logger : %msg%n"
+    file: "%d %-5level [%thread] %logger : %msg%n"
+  level:
+#    org.springframework.web: DEBUG
+#    guru.springframework.controllers: DEBUG
+#    org.hibernate: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 ---
 spring:
   profiles: container
