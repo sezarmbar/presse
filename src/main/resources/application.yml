@@ -1,112 +1,12 @@
-
 spring:
-  profiles.active: development
-
----
-spring:
-  profiles: development
   datasource:
-    url: jdbc:mysql://localhost:3306/presse?useSSL=false
+    url: jdbc:mysql://localhost:3306/presse
     username: root
     password: root
     platform: mysql
     initialize: false
   jpa:
-    database-platform: org.hibernate.dialect.MySQLDialect
+    database-platform: org.hibernate.dialect.MySQL5Dialect
     show-sql: true
-logging:
-  file: logs/dev_app.log
-  pattern:
-    console: "%d %-5level %logger : %msg%n"
-    file: "%d %-5level [%thread] %logger : %msg%n"
-  level:
-#    org.springframework.web: DEBUG
-#    guru.springframework.controllers: DEBUG
-#    org.hibernate: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
----
-spring:
-  profiles: container
-  datasource:
-    url: jdbc:mysql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}
-    username: ${DATABASE_USER}
-    password: ${DATABASE_PASSWORD}
-    initialize: true
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#spring:
-#  profiles.active: development
-#
-#---
-#spring:
-#  profiles: development
-#datasource:
-#  presse:
-#      url: jdbc:mysql://localhost:3306/presse?useSSL=false
-#      username: root
-#      password: root
-#      driver-class-name: com.mysql.jdbc.Driver
-#      test-on-borrow: true
-#      validation-query: SELECT 1 FROM dual
-#  db-contract:
-#      url: jdbc:oracle:thin:@db_contract_dev
-#      username: root
-#      password: root
-#      driver-class-name: com.mysql.jdbc.Driver
-#      test-on-borrow: true
-#      validation-query: SELECT 1 FROM dual
-#
-#---
-#
-#spring:
-#  profiles: test
-#datasource:
-#  presse:
-#      url: jdbc:oracle:thin:@db_person_test
-#      username: root
-#      password: root
-#      driver-class-name: com.mysql.jdbc.Driver
-#      test-on-borrow: true
-#      validation-query: SELECT 1 FROM dual
-#  db-contract:
-#      url: jdbc:oracle:thin:@db_contract_test
-#      username: root
-#      password: root
-#      driver-class-name: com.mysql.jdbc.Driver
-#      test-on-borrow: true
-#      validation-query: SELECT 1 FROM dual
-#
-#---
-#
-#spring:
-#  profiles: production
-#datasource:
-#  presse:
-#      url: jdbc:oracle:thin:@db_person_prod
-#      username: root
-#      password: root
-#      driver-class-name: com.mysql.jdbc.Driver
-#      test-on-borrow: true
-#      validation-query: SELECT 1 FROM dual
-#  db-contract:
-#      url: jdbc:oracle:thin:@db_contract_prod
-#      username: root
-#      password: root
-#      driver-class-name: com.mysql.jdbc.Driver
-#      test-on-borrow: true
-#      validation-query: SELECT 1 FROM dual
-#
-#---
+    hibernate:
+      ddl-auto: create-drop
