@@ -15,12 +15,13 @@ import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.io.*;
 import java.util.Iterator;
 import java.util.List;
 
 public class ImageProcessing {
-  public static void main(String[] args)  {
+  public static void main(String[] args) throws IOException {
     String drive = "E:/Fotolia/Hintergründe/",
       n = "",
       orgName = "Abstraktes Muster_aSuruwataRi_Fotolia",
@@ -46,6 +47,7 @@ public class ImageProcessing {
 //    addTextWatermark("Press Oldenburg", desFileCompress, desFileWatermark);
 //    addImageWatermark(inWaterImageFile, desFileCompress, desFileWatermarkImage);
 //
+    resize("E:/Mahmoud/01-image.jpg","E:/Mahmoud/01-i.jpg",100);
   }
 
 
@@ -183,15 +185,30 @@ public class ImageProcessing {
   }
 
 
-  public static void imagePyrDown() {
-//    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-//    Mat source = Highgui.imread("e:/02-compressed.jpg", Highgui.CV_LOAD_IMAGE_COLOR);
-//
-//    Mat destination = new Mat(source.rows() / 2, source.cols() / 2, source.type());
-////    Mat destination = new Mat(source.rows() / 2, source.cols() / 2, source.type());
-//    destination = source;
-//    Imgproc.pyrDown(source, destination, new Size(source.cols() / 2, source.rows() / 2));
-//    Highgui.imwrite("e:/pyrDown.jpg", destination);
+
+  private static void resize(String inputImagePath, String outputImagePath, int scaledHeight)
+    throws IOException {
+    // reads input image
+    File inputFile = new File(inputImagePath);
+    BufferedImage inputImage = ImageIO.read(inputFile);
+
+    int xySize = (inputImage.getHeight()) / scaledHeight;
+    int scaledWidth = inputImage.getWidth()/xySize;
+    // creates output image
+    BufferedImage outputImage = new BufferedImage(scaledWidth,
+      scaledHeight, inputImage.getType());
+
+    // scales the input image to the output image
+    Graphics2D g2d = outputImage.createGraphics();
+    g2d.drawImage(inputImage, 0, 0, scaledWidth, scaledHeight, null);
+    g2d.dispose();
+
+    // extracts extension of output file
+    String formatName = outputImagePath.substring(outputImagePath
+      .lastIndexOf(".") + 1);
+
+    // writes to output file
+    ImageIO.write(outputImage, formatName, new File(outputImagePath));
   }
 
 
