@@ -5,7 +5,6 @@ import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.iptc.IptcDirectory;
 
-
 import javax.activation.MimetypesFileTypeMap;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -15,8 +14,10 @@ import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.List;
 
@@ -42,32 +43,41 @@ public class ImageProcessing {
     File desFileWatermarkImage = new File(watermarkImage);
     File inWaterImageFile = new File(waterImage);
 
-    readImageMetadata(filename);
+    readImageMetadata(org);
 //    compressImageThump(filename, desFileCompress);
 //    addTextWatermark("Press Oldenburg", desFileCompress, desFileWatermark);
 //    addImageWatermark(inWaterImageFile, desFileCompress, desFileWatermarkImage);
 //
-    resize("E:/Mahmoud/01-image.jpg","E:/Mahmoud/01-i.jpg",1000);
+    resize("E:/Mahmoud/01-image.jpg", "E:/Mahmoud/01-i.jpg", 1000);
   }
 
 
   /**
    * Read keywords from image metadata
    *
-   * @param image Image File.
+   * @param org Image String path.
    */
-  private static void readImageMetadata(File image) {
+  public static String readImageMetadata(String org) {
     try {
+      File image = new File(org);
       Metadata metadata = ImageMetadataReader.readMetadata(image);
-      List<String> keyword = metadata.getFirstDirectoryOfType(IptcDirectory.class).getKeywords();
-      System.out.println(keyword);
+      System.out.println(metadata);
+      if ( metadata.getFirstDirectoryOfType(IptcDirectory.class).getKeywords() != null) {
+        List<String> keyword = metadata.getFirstDirectoryOfType(IptcDirectory.class).getKeywords();
+        System.out.println(keyword);
+        return String.join(";", keyword);
+      }
     } catch (ImageProcessingException | IOException e) {
       System.out.println("can't find the file ...");
     }
+    return "---";
   }
 
-  private static void compressImageThump(File imageFile, File compressedImageFile)  {
+  public static void compressImageThump(String imagePath, String compressedImagePath) {
     try {
+      File imageFile = new File(imagePath);
+      File compressedImageFile = new File(compressedImagePath);
+
       BufferedImage image = ImageIO.read(imageFile);
 
       OutputStream os = new FileOutputStream(compressedImageFile);
@@ -97,11 +107,14 @@ public class ImageProcessing {
    * Add text watermark to Image
    *
    * @param text            : string watermark text.
-   * @param sourceImageFile : Original image
-   * @param destImageFile   : where to write processed image
+   * @param sourceImagePath : Original image
+   * @param destImagePath   : where to write processed image
    */
-  private static void addTextWatermark(String text, File sourceImageFile, File destImageFile) {
+  public static void addTextWatermark(String text, String sourceImagePath, String destImagePath) {
     try {
+      File sourceImageFile = new File(sourceImagePath);
+      File destImageFile = new File(destImagePath);
+
       BufferedImage sourceImage = ImageIO.read(sourceImageFile);
       Graphics2D g2d = (Graphics2D) sourceImage.getGraphics();
 
@@ -133,12 +146,16 @@ public class ImageProcessing {
   /**
    * Add image watermark to Image
    *
-   * @param watermarkImageFile :File path to Logo image.
-   * @param sourceImageFile    :File Original image
-   * @param destImageFile      :File where to write processed image
+   * @param watermarkImagePath :String path to Logo image.
+   * @param sourceImagePath    :String Original image
+   * @param destImagePath      :String where to write processed image
    */
-  private static void addImageWatermark(File watermarkImageFile, File sourceImageFile, File destImageFile) {
+  public static void addImageWatermark(String watermarkImagePath, String sourceImagePath, String destImagePath) {
     try {
+      File watermarkImageFile = new File(watermarkImagePath);
+      File sourceImageFile = new File(sourceImagePath);
+      File destImageFile = new File(destImagePath);
+
       BufferedImage sourceImage = ImageIO.read(sourceImageFile);
       BufferedImage watermarkImage = ImageIO.read(watermarkImageFile);
 
@@ -169,31 +186,32 @@ public class ImageProcessing {
    * @param filePath file path String.
    * @return boolean true : if image, false : if not Image
    */
-  private static boolean isImage(String filePath) {
+  public static boolean isImage(String filePath) {
     File f = new File(filePath);
     MimetypesFileTypeMap mediatype = new MimetypesFileTypeMap();
-    mediatype.addMimeTypes("image/psd psd");
+    mediatype.addMimeTypes("image/jpeg jpeg");
     String mimetype = mediatype.getContentType(f);
     String type = mimetype.split("/")[0];
     if (type.equals("image")) {
-      System.out.println("It's an image");
-      return false;
+      System.out.print("It's an image   ");
+      return true;
     } else {
       System.out.println("It's NOT an image");
-      return true;
+      return false;
     }
   }
 
 
-
-  private static void resize(String inputImagePath, String outputImagePath, int scaledHeight)
+  public static void resize(String inputImagePath, String outputImagePath, int scaledHeight)
     throws IOException {
     // reads input image
     File inputFile = new File(inputImagePath);
     BufferedImage inputImage = ImageIO.read(inputFile);
+    int scaledWidth;
 
-    int xySize = (inputImage.getHeight()) / scaledHeight;
-    int scaledWidth = inputImage.getWidth()/xySize;
+    scaledWidth = scaledHeight * inputImage.getWidth() / inputImage.getHeight();
+
+
     // creates output image
     BufferedImage outputImage = new BufferedImage(scaledWidth,
       scaledHeight, inputImage.getType());
