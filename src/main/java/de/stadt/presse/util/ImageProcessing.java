@@ -47,7 +47,7 @@ public class ImageProcessing {
 //    addTextWatermark("Press Oldenburg", desFileCompress, desFileWatermark);
 //    addImageWatermark(inWaterImageFile, desFileCompress, desFileWatermarkImage);
 //
-    resize("E:/Mahmoud/01-image.jpg","E:/Mahmoud/01-i.jpg",100);
+    resize("E:/Mahmoud/01-image.jpg","E:/Mahmoud/01-i.jpg",1000);
   }
 
 

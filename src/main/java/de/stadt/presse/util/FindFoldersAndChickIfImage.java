@@ -7,20 +7,27 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class FindFoldersAndChickIfImage {
+
+  static int countOrg = 0;
+  static int countSec = 0;
+
   public static void main(String[] args) {
+
 
 //    createDirectory("e:/mahmoud");
 
-    String path = "E:";
+    String path = "E:\\";
+    String pathThump = "d:\\thump";
 
-    namePrint(path, "", "");
+
+    namePrint(path, pathThump, "", "");
 
   }
 
   /**
    * search in folders
    * */
-  private static void namePrint(String path, String space, String dir) throws NullPointerException {
+  public static void namePrint(String path,String thumpPath, String space, String dir) throws NullPointerException {
     File folder = new File(path);
     String spa = space + dir + "  ";
     File[] listOfFiles = folder.listFiles();
@@ -29,17 +36,19 @@ public class FindFoldersAndChickIfImage {
       if (listOfFiles != null) {
         for (File file : listOfFiles) {
           if(file.isDirectory()){
-            System.out.println(spa + file.getName() + "  ---->  " + path);
-            namePrint(path + "/" + file.getName() , spa, " |");
+            createDirectory(thumpPath+"\\"+ file.getName() );
+            namePrint(path + "\\" + file.getName(),thumpPath + "\\" + file.getName(), spa, " |");
           }else if(file.isFile()){
-            System.out.print(spa + file.getName());
-            System.out.println("  " + path + "/" + file.getName());
+//            System.out.println(spa + file.getName());
+//            System.out.println("  " + path + "/" + file.getName()+" **** "+thumpPath + "/" + file.getName());
           }
         }
       }
     } catch (NullPointerException e) {
       System.out.println("path not found ... redirect to e:");
 //      namePrint("e:", "", "");
+    } finally {
+      //TODO
     }
   }
 
@@ -62,8 +71,29 @@ public class FindFoldersAndChickIfImage {
   }
 
 
-//  public static boolean isImage(File file) {
-//    System.out.println(file.getName());
-//    return true;
+//  public static void namePrint(String path, String space, String dir) throws NullPointerException {
+//    File folder = new File(path);
+//    String spa = space + dir + "  ";
+//    File[] listOfFiles = folder.listFiles();
+//    try {
+//
+//      if (listOfFiles != null) {
+//        for (File file : listOfFiles) {
+//          if(file.isDirectory()){
+//            System.out.println(spa + file.getName() + "  ---->  " + path);
+//            namePrint(path + "/" + file.getName() , spa, " |");
+//          }else if(file.isFile()){
+//            System.out.print(spa + file.getName());
+//            System.out.println("  " + path + "/" + file.getName());
+//          }
+//        }
+//      }
+//    } catch (NullPointerException e) {
+//      System.out.println("path not found ... redirect to e:");
+////      namePrint("e:", "", "");
+//    }
 //  }
+
 }
+
+
