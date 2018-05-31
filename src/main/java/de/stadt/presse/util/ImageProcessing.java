@@ -61,14 +61,10 @@ public class ImageProcessing {
     try {
       File image = new File(org);
       Metadata metadata = ImageMetadataReader.readMetadata(image);
-      System.out.println(metadata);
-      if ( metadata.getFirstDirectoryOfType(IptcDirectory.class).getKeywords() != null) {
         List<String> keyword = metadata.getFirstDirectoryOfType(IptcDirectory.class).getKeywords();
-        System.out.println(keyword);
         return String.join(";", keyword);
-      }
-    } catch (ImageProcessingException | IOException e) {
-      System.out.println("can't find the file ...");
+    } catch (ImageProcessingException | IOException  | NullPointerException Nulle) {
+      System.out.println("can't find the metadata ...");
     }
     return "---";
   }
@@ -193,40 +189,41 @@ public class ImageProcessing {
     String mimetype = mediatype.getContentType(f);
     String type = mimetype.split("/")[0];
     if (type.equals("image")) {
-      System.out.print("It's an image   ");
       return true;
     } else {
-      System.out.println("It's NOT an image");
       return false;
     }
   }
 
 
-  public static void resize(String inputImagePath, String outputImagePath, int scaledHeight)
-    throws IOException {
+  public static void resize(String inputImagePath, String outputImagePath, int scaledHeight) {
     // reads input image
-    File inputFile = new File(inputImagePath);
-    BufferedImage inputImage = ImageIO.read(inputFile);
-    int scaledWidth;
+    try {
+      File inputFile = new File(inputImagePath);
+      BufferedImage inputImage = ImageIO.read(inputFile);
+      int scaledWidth;
 
-    scaledWidth = scaledHeight * inputImage.getWidth() / inputImage.getHeight();
+      scaledWidth = scaledHeight * inputImage.getWidth() / inputImage.getHeight();
 
 
-    // creates output image
-    BufferedImage outputImage = new BufferedImage(scaledWidth,
-      scaledHeight, inputImage.getType());
+      // creates output image
+      BufferedImage outputImage = new BufferedImage(scaledWidth,
+        scaledHeight, inputImage.getType());
 
-    // scales the input image to the output image
-    Graphics2D g2d = outputImage.createGraphics();
-    g2d.drawImage(inputImage, 0, 0, scaledWidth, scaledHeight, null);
-    g2d.dispose();
+      // scales the input image to the output image
+      Graphics2D g2d = outputImage.createGraphics();
+      g2d.drawImage(inputImage, 0, 0, scaledWidth, scaledHeight, null);
+      g2d.dispose();
 
-    // extracts extension of output file
-    String formatName = outputImagePath.substring(outputImagePath
-      .lastIndexOf(".") + 1);
+      // extracts extension of output file
+      String formatName = outputImagePath.substring(outputImagePath
+        .lastIndexOf(".") + 1);
 
-    // writes to output file
-    ImageIO.write(outputImage, formatName, new File(outputImagePath));
+      // writes to output file
+      ImageIO.write(outputImage, formatName, new File(outputImagePath));
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
 
