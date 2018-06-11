@@ -76,6 +76,16 @@
       <version>1.16.18</version>
     </dependency>
 
+
+    <!-- https://mvnrepository.com/artifact/com.twelvemonkeys.imageio/imageio-jpeg -->
+    <dependency>
+      <groupId>com.twelvemonkeys.imageio</groupId>
+      <artifactId>imageio-jpeg</artifactId>
+      <version>3.0-rc5</version>
+    </dependency>
+
+
+
   </dependencies>
 
   <build>
