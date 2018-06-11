@@ -1,5 +1,6 @@
-package de.stadt.presse.util;
+package tmp.company.threads;
 
+import de.stadt.presse.util.ImageProcessing;
 import lombok.Data;
 
 import java.io.File;

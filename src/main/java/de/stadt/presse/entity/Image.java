@@ -43,7 +43,7 @@ public class Image {
   @JsonProperty
   @Enumerated(value=EnumType.STRING)
   @Column(name = "image_type")
-  private ImageType imageType;
+  private String imageType;
 
   @JsonProperty
   @Column(name = "image_keywords")
