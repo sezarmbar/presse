@@ -14,7 +14,7 @@ public class FindFolders {
   public static void main(String[] args) {
 
 
-    String path = "D:\\pics\\Fotolia\\Baustellen";
+    String path = "D:\\pics\\Fotolia\\Icons\\Einzelne";
     String pathThump = "d:\\thump";
 
 

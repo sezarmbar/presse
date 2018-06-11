@@ -4,6 +4,7 @@ import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.iptc.IptcDirectory;
+import com.sun.image.codec.jpeg.JPEGCodec;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.imageio.IIOImage;
@@ -43,12 +44,12 @@ public class ImageProcessing {
     File desFileWatermarkImage = new File(watermarkImage);
     File inWaterImageFile = new File(waterImage);
 
-    readImageMetadata(org);
+//    readImageMetadata(org);
 //    compressImageThump(filename, desFileCompress);
 //    addTextWatermark("Press Oldenburg", desFileCompress, desFileWatermark);
 //    addImageWatermark(inWaterImageFile, desFileCompress, desFileWatermarkImage);
 //
-    resize("E:/Mahmoud/01-image.jpg", "E:/Mahmoud/01-i.jpg", 1000);
+    resize("D:\\pics\\Fotolia\\Icons\\Einzelne\\Abl.jpg", "d:/01-i.jpg", 1000);
   }
 
 
@@ -63,10 +64,10 @@ public class ImageProcessing {
       Metadata metadata = ImageMetadataReader.readMetadata(image);
         List<String> keyword = metadata.getFirstDirectoryOfType(IptcDirectory.class).getKeywords();
         return String.join(";", keyword);
-    } catch (ImageProcessingException | IOException  | NullPointerException Nulle) {
-      System.out.println("can't find the metadata ...");
+    } catch (ImageProcessingException | IOException  | NullPointerException e) {
+      return "null";
+//      System.out.println("can't find the metadata ...");
     }
-    return "---";
   }
 
   public static void compressImageThump(String imagePath, String compressedImagePath) {
@@ -196,10 +197,13 @@ public class ImageProcessing {
   }
 
 
-  public static void resize(String inputImagePath, String outputImagePath, int scaledHeight) {
+  public static boolean resize(String inputImagePath, String outputImagePath, int scaledHeight) {
+
     // reads input image
+
     try {
       File inputFile = new File(inputImagePath);
+
       BufferedImage inputImage = ImageIO.read(inputFile);
       int scaledWidth;
 
@@ -221,9 +225,11 @@ public class ImageProcessing {
 
       // writes to output file
       ImageIO.write(outputImage, formatName, new File(outputImagePath));
+      return true;
     } catch (IOException e) {
       e.printStackTrace();
     }
+    return true;
   }
 
 
