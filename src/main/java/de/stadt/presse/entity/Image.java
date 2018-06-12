@@ -41,7 +41,7 @@ public class Image {
   private String imageThumpPath;
 
   @JsonProperty
-  @Enumerated(value=EnumType.STRING)
+//  @Enumerated(value=EnumType.STRING)
   @Column(name = "image_type")
   private String imageType;
 

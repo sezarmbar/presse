@@ -30,8 +30,8 @@ public class ImageController {
 
   @GetMapping("/scan")
   public void scanDiryctory() {
-    String path = "D:\\pics\\Fotolia\\Baustellen";
-    String thumpPath = "d:\\thump";
+    String path = "d:/pics/Fotolia/Baustellen";
+    String thumpPath = "d:/thump";
     int scaleHeight = 200;
 
     File folder = new File(path);

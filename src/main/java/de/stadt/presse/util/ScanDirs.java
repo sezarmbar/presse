@@ -41,35 +41,44 @@ public class ScanDirs {
 
   public void scan(final File file, String thumpPath, int scaleHeight) {
 
-    if (file.isDirectory()) {
-      createDirectory(thumpPath + "\\" + file.getName());
-    } else if (file.isFile()) {
-      image = new Image();
-      image.setImageName(file.getName());
-      image.setImagePath(file.getPath());
-      image.setImageKeywords(readImageMetadata(file.getPath(), thumpPath + "\\" + file.getName())+
-        ";"+splitName(file.getName()));
-      image.setImageType(file.getName().substring(file.getName().indexOf(".")+1));
-      if(resize(file.getPath(), thumpPath + "\\" + file.getName(), scaleHeight))
-        image.setImageThumpPath(thumpPath + "\\" + file.getName());
-      splitName(file.getName());
-      imageSave(image);
+    try {
+      if (file.isDirectory()) {
+        createDirectory(thumpPath + "/" + file.getName());
+      } else if (file.isFile()) {
+        System.out.println("isFile:  "  + file.getName());
 
-//      System.out.println(image);
-    }
+        image = new Image();
+        image.setImageName(file.getName());
+        image.setImagePath(file.getPath());
+        image.setImageKeywords(readImageMetadata(file.getPath(), thumpPath + "/" + file.getName())+
+          ";"+splitName(file.getName()));
+        image.setImageType(file.getName().substring(file.getName().indexOf(".")+1));
+        if(resize(file.getPath(), thumpPath + "/" + file.getName(), scaleHeight))
+          image.setImageThumpPath(thumpPath + "/" + file.getName());
+        splitName(file.getName());
+//        imageSave(image);
 
-    // Ignore files which are not files and dirs
-    if (file.isFile()) {
-    } else {
-      System.out.println(file.getName());
+        System.out.println(image);
+      }
 
-      final File[] children = file.listFiles();
-      if (children != null) {
-        for (final File child : children) {
-          ScanDirs readDirs= new ScanDirs();
-          readDirs.scan(child, thumpPath + "\\" + file.getName(), scaleHeight);
+      // Ignore files which are not files and dirs
+      if (file.isFile()) {
+      } else {
+        System.out.println("file 2:  "  +file.length());
+
+        final File[] children = file.listFiles();
+        if (children != null) {
+          int i = 0;
+          for (final File child : children) {
+            System.out.println("file :  "+ i++ );
+
+            ScanDirs readDirs= new ScanDirs();
+            readDirs.scan(child, thumpPath + "/" + file.getName(), scaleHeight);
+          }
         }
       }
+    } catch (Exception e) {
+      e.printStackTrace();
     }
   }
   private static String readImageMetadata(String currentImagePath, String outputImagePath) {
