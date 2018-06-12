@@ -4,8 +4,6 @@ import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.iptc.IptcDirectory;
-import com.sun.image.codec.jpeg.JPEGCodec;
-
 import javax.activation.MimetypesFileTypeMap;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -23,34 +21,34 @@ import java.util.Iterator;
 import java.util.List;
 
 public class ImageProcessing {
-  public static void main(String[] args) throws IOException {
-    String drive = "E:/Fotolia/Hintergründe/",
-      n = "",
-      orgName = "Abstraktes Muster_aSuruwataRi_Fotolia",
-      type = ".jpg";
-
-    String prefix = drive + n + orgName;
-
-    String org = prefix + type,
-      compressed = prefix + "-c" + type,
-      watermark = prefix + "-wmT" + type,
-      watermarkImage = prefix + "-wmI" + type;
-
-    String waterImage = "E:/foloParent/tmp/logo.png";
-
-    File filename = new File(org);
-    File desFileCompress = new File(compressed);
-    File desFileWatermark = new File(watermark);
-    File desFileWatermarkImage = new File(watermarkImage);
-    File inWaterImageFile = new File(waterImage);
-
-//    readImageMetadata(org);
-//    compressImageThump(filename, desFileCompress);
-//    addTextWatermark("Press Oldenburg", desFileCompress, desFileWatermark);
-//    addImageWatermark(inWaterImageFile, desFileCompress, desFileWatermarkImage);
+//  public static void main(String[] args) throws IOException {
+//    String drive = "E:/Fotolia/Hintergründe/",
+//      n = "",
+//      orgName = "Abstraktes Muster_aSuruwataRi_Fotolia",
+//      type = ".jpg";
 //
-    resize("D:\\pics\\Fotolia\\Icons\\Einzelne\\Abl.jpg", "d:/01-i.jpg", 1000);
-  }
+//    String prefix = drive + n + orgName;
+//
+//    String org = prefix + type,
+//      compressed = prefix + "-c" + type,
+//      watermark = prefix + "-wmT" + type,
+//      watermarkImage = prefix + "-wmI" + type;
+//
+//    String waterImage = "E:/foloParent/tmp/logo.png";
+//
+//    File filename = new File(org);
+//    File desFileCompress = new File(compressed);
+//    File desFileWatermark = new File(watermark);
+//    File desFileWatermarkImage = new File(watermarkImage);
+//    File inWaterImageFile = new File(waterImage);
+//
+////    readImageMetadata(org);
+////    compressImageThump(filename, desFileCompress);
+////    addTextWatermark("Press Oldenburg", desFileCompress, desFileWatermark);
+////    addImageWatermark(inWaterImageFile, desFileCompress, desFileWatermarkImage);
+////
+//    resize("D:\\pics\\Fotolia\\Icons\\Einzelne\\Abl.jpg", "d:/01-i.jpg", 1000);
+//  }
 
 
   /**

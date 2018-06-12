@@ -4,13 +4,14 @@ package de.stadt.presse.controller;
 
 import de.stadt.presse.entity.Image;
 import de.stadt.presse.exceptions.ResourceNotFoundException;
-import de.stadt.presse.entity.Image;
 import de.stadt.presse.repository.ImageRepository;
+import de.stadt.presse.util.ScanDirs;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.io.File;
 import java.util.List;
 
 @RestController
@@ -27,6 +28,18 @@ public class ImageController {
     return imageRepository.findAll();
   }
 
+  @GetMapping("/scan")
+  public void scanDiryctory() {
+    String path = "D:\\pics\\Fotolia\\Baustellen";
+    String thumpPath = "d:\\thump";
+    int scaleHeight = 200;
+
+    File folder = new File(path);
+    ScanDirs readDirs= new ScanDirs();
+    readDirs.scan(folder, thumpPath, scaleHeight);
+
+  }
+
   // Create a new Image
   @PostMapping("/image")
   public Image createImage(@Valid @RequestBody Image image) {
@@ -40,18 +53,6 @@ public class ImageController {
       .orElseThrow(() -> new ResourceNotFoundException("Image", "id", imageId));
   }
 
-//  // Update a Image
-//  @PutMapping("/image/{id}")
-//  public Image updateImage(@PathVariable(value = "id") Long imageId,
-//                         @Valid @RequestBody Image imageDetails) {
-//
-//    Image image = imageRepository.findById(imageId)
-//      .orElseThrow(() -> new ResourceNotFoundException("Image", "id", imageId));
-//
-//    image.setImageKeywords(imageDetails.getImageKeywords());
-//
-//    return imageRepository.save(image);
-//  }
 
   @DeleteMapping("/image/{id}")
   public ResponseEntity<?> deleteImage(@PathVariable(value = "id") Long imageId) {
