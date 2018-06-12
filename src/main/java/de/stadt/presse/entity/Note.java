@@ -82,4 +82,16 @@ public class Note  {
     }
 
     // Getters and Setters ... (Omitted for brevity)
+
+
+  @Override
+  public String toString() {
+    return "Note{" +
+      "id=" + id +
+      ", title='" + title + '\'' +
+      ", content='" + content + '\'' +
+      ", createdAt=" + createdAt +
+      ", updatedAt=" + updatedAt +
+      '}';
+  }
 }

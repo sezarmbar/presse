@@ -11,16 +11,16 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableJpaAuditing
 public class PresseApplication {
 
-@Bean
-public  WebMvcConfigurer configurer(){
-  return new WebMvcConfigurer() {
-    @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-      String myExternalFilePath = "file:///D:/";
-      registry.addResourceHandler("/**").addResourceLocations(myExternalFilePath);
-    }
-  };
-}
+//@Bean
+//public  WebMvcConfigurer configurer(){
+//  return new WebMvcConfigurer() {
+//    @Override
+//    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+//      String myExternalFilePath = "file:///D:/";
+//      registry.addResourceHandler("/**").addResourceLocations(myExternalFilePath);
+//    }
+//  };
+//}
 
 
 	public static void main(String[] args) {

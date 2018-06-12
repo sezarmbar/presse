@@ -3,8 +3,10 @@ package de.stadt.presse.controller;
 
 
 import de.stadt.presse.entity.Image;
+import de.stadt.presse.entity.Note;
 import de.stadt.presse.exceptions.ResourceNotFoundException;
 import de.stadt.presse.repository.ImageRepository;
+import de.stadt.presse.repository.NoteRepository;
 import de.stadt.presse.util.ScanDirs;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,28 +23,33 @@ public class ImageController {
   @Autowired
   private
   ImageRepository imageRepository;
-
+  NoteRepository noteRepository;
   // Get All Images
   @GetMapping("/image")
   public List<Image> getAllImages() {
     return imageRepository.findAll();
   }
 
-  @GetMapping("/scan")
+  @PostMapping("/scan")
   public void scanDiryctory() {
-    String path = "d:/pics/Fotolia/Baustellen";
+    String path = "d:/pics/Fotolia/Baustellen/Bilder zur Ansicht";
     String thumpPath = "d:/thump";
     int scaleHeight = 200;
 
+    Note note  = new Note();
+    note.setTitle("Mahmou");note.setContent("Sarah");
+    noteRepository.save(note);
+
     File folder = new File(path);
     ScanDirs readDirs= new ScanDirs();
-    readDirs.scan(folder, thumpPath, scaleHeight);
+//    readDirs.scan(folder, thumpPath, scaleHeight);
 
   }
 
   // Create a new Image
   @PostMapping("/image")
   public Image createImage(@Valid @RequestBody Image image) {
+
     return imageRepository.save(image);
   }
 
