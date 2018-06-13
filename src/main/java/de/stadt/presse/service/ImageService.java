@@ -76,7 +76,7 @@ public class ImageService {
   }
 
   private boolean resize(String currentImagePath, String outputImagePath, int scaleHeight) {
-    if (!Files.exists(Paths.get(outputImagePath))) {
+    if (!Files.exists(Paths.get(outputImagePath))&& ImageProcessing.isImage(currentImagePath)) {
       return ImageProcessing.resize(currentImagePath, outputImagePath, 200);
     }
     return false;

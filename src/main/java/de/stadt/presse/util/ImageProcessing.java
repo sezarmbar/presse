@@ -187,11 +187,7 @@ public class ImageProcessing {
     mediatype.addMimeTypes("image/jpeg jpeg");
     String mimetype = mediatype.getContentType(f);
     String type = mimetype.split("/")[0];
-    if (type.equals("image")) {
-      return true;
-    } else {
-      return false;
-    }
+    return type.equals("image");
   }
 
 
@@ -201,30 +197,30 @@ public class ImageProcessing {
 
     try {
       File inputFile = new File(inputImagePath);
-
       BufferedImage inputImage = ImageIO.read(inputFile);
+      BufferedImage outputImage;
       int scaledWidth;
 
-      scaledWidth = scaledHeight * inputImage.getWidth() / inputImage.getHeight();
-
-
-      // creates output image
-      BufferedImage outputImage = new BufferedImage(scaledWidth,
-        scaledHeight, inputImage.getType());
-
-      // scales the input image to the output image
-      Graphics2D g2d = outputImage.createGraphics();
-      g2d.drawImage(inputImage, 0, 0, scaledWidth, scaledHeight, null);
-      g2d.dispose();
+      if(inputImage.getHeight()> scaledHeight*2) {
+        scaledWidth = scaledHeight * inputImage.getWidth() / inputImage.getHeight();
+        // creates output image
+          outputImage = new BufferedImage(scaledWidth,scaledHeight, inputImage.getType());
+        // scales the input image to the output image
+        Graphics2D g2d = outputImage.createGraphics();
+        g2d.drawImage(inputImage, 0, 0, scaledWidth, scaledHeight, null);
+        g2d.dispose();
+      } else {
+        outputImage = inputImage;
+      }
 
       // extracts extension of output file
       String formatName = outputImagePath.substring(outputImagePath
         .lastIndexOf(".") + 1);
-
       // writes to output file
       ImageIO.write(outputImage, formatName, new File(outputImagePath));
       return true;
-    } catch (IOException e) {
+    } catch (NullPointerException | IOException e) {
+      System.out.println("error IO................... "  + inputImagePath);
       e.printStackTrace();
     }
     return true;
