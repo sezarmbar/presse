@@ -28,12 +28,8 @@ public class ImageService {
   }
 
 
-  public boolean scanDirs() {
-    String path = "d:/pics/Fotolia/Baustellen/Bilder zur Ansicht";
-    String thumpPath = "d:/thump";
-    int scaleHeight = 200;
-    File folder = new File(path);
-
+  public boolean scanDirs(String folderPath, String thumpPath, int scaleHeight) {
+    File folder = new File(folderPath);
     scanDirectory(folder, thumpPath, scaleHeight);
     return true;
   }

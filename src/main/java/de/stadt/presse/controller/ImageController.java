@@ -26,8 +26,10 @@ public class ImageController {
   }
 
   @PostMapping("/scan")
-  public boolean scanDiryctory() {
-    return imageService.scanDirs();
+  public boolean scanDiryctory(@RequestParam("folder") String folder,
+                               @RequestParam("thumpPath") String thumpPath,
+                               @RequestParam("scaleHeight") Integer scaleHeight) {
+    return imageService.scanDirs(folder,thumpPath,scaleHeight);
 
   }
 
