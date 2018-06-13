@@ -29,9 +29,7 @@ public class NoteController {
     // Create a new Note
     @PostMapping("/notes")
     public Note createNote(@Valid @RequestBody Note note) {
-      System.out.println("image  : ----> " + note);
-
-      return noteRepository.save(note);
+        return noteRepository.save(note);
     }
 
     // Get a Single Note

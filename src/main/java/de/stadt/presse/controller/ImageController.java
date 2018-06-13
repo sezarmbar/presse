@@ -3,71 +3,33 @@ package de.stadt.presse.controller;
 
 
 import de.stadt.presse.entity.Image;
-import de.stadt.presse.entity.Note;
-import de.stadt.presse.exceptions.ResourceNotFoundException;
-import de.stadt.presse.repository.ImageRepository;
-import de.stadt.presse.repository.NoteRepository;
-import de.stadt.presse.util.ScanDirs;
+import de.stadt.presse.service.ImageService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.io.File;
-import java.util.List;
+
 
 @RestController
 @RequestMapping("/api")
 public class ImageController {
 
   @Autowired
-  private
-  ImageRepository imageRepository;
-  NoteRepository noteRepository;
-  // Get All Images
-  @GetMapping("/image")
-  public List<Image> getAllImages() {
-    return imageRepository.findAll();
+    private
+  ImageService imageService;
+
+
+  @PostMapping("/insert")
+  public Image insert(@Valid @RequestBody Image image) {
+
+    return imageService.save(image);
   }
 
   @PostMapping("/scan")
-  public void scanDiryctory() {
-    String path = "d:/pics/Fotolia/Baustellen/Bilder zur Ansicht";
-    String thumpPath = "d:/thump";
-    int scaleHeight = 200;
-
-    Note note  = new Note();
-    note.setTitle("Mahmou");note.setContent("Sarah");
-    noteRepository.save(note);
-
-    File folder = new File(path);
-    ScanDirs readDirs= new ScanDirs();
-//    readDirs.scan(folder, thumpPath, scaleHeight);
+  public boolean scanDiryctory() {
+    return imageService.scanDirs();
 
   }
 
-  // Create a new Image
-  @PostMapping("/image")
-  public Image createImage(@Valid @RequestBody Image image) {
 
-    return imageRepository.save(image);
-  }
-
-  // Get a Single Image
-  @GetMapping("/image/{id}")
-  public Image getImageById(@PathVariable(value = "id") Long imageId) {
-    return imageRepository.findById(imageId)
-      .orElseThrow(() -> new ResourceNotFoundException("Image", "id", imageId));
-  }
-
-
-  @DeleteMapping("/image/{id}")
-  public ResponseEntity<?> deleteImage(@PathVariable(value = "id") Long imageId) {
-    Image image = imageRepository.findById(imageId)
-      .orElseThrow(() -> new ResourceNotFoundException("Image!", "ID", imageId));
-
-    imageRepository.delete(image);
-
-    return ResponseEntity.ok().build();
-  }
 }
