@@ -28,14 +28,14 @@ public class ImageService {
   }
 
 
-  public boolean scanDirs(String folderPath, String thumpPath, int scaleHeight) {
+  public boolean scanDirs(String folderPath, String thumpPath, int scaleHeight,String strText) {
     File folder = new File(folderPath);
-    scanDirectory(folder, thumpPath, scaleHeight);
+    scanDirectory(folder, thumpPath, scaleHeight,strText);
     return true;
   }
 
 
-  private void scanDirectory(final File file, String thumpPath, int scaleHeight) {
+  private void scanDirectory(final File file, String thumpPath, int scaleHeight,String strText) {
 
     if (file.isDirectory()) {
       createDirectory(thumpPath + "/" + file.getName());
@@ -43,7 +43,13 @@ public class ImageService {
       Image image = new Image();
       image.setImageName(file.getName());
       image.setImagePath(file.getPath());
-      image.setImageKeywords(readImageMetadata(file.getPath(), thumpPath + "/" + file.getName()) +
+      String metadataKeywords =readImageMetadata(file.getPath(), thumpPath + "/" + file.getName());
+      if (metadataKeywords=="null"){
+        image.setImageHaveMetadata(false);
+      }else {
+        image.setImageHaveMetadata(true);
+      }
+      image.setImageKeywords(metadataKeywords+
         ";" + splitName(file.getName()));
       image.setImageType(file.getName().substring(file.getName().indexOf(".") + 1));
 
@@ -53,6 +59,9 @@ public class ImageService {
         File isFileExist = new File(thumpPath + "/" + file.getName());
         if (isFileExist.exists()) {image.setImageThumpPath(thumpPath + "/" + file.getName());}
       }
+
+      image.setImageWatermarkPath(addTextWatermark(strText,file.getPath(),thumpPath ,file.getName()));
+
       save(image);
     }
 
@@ -62,7 +71,7 @@ public class ImageService {
       final File[] children = file.listFiles();
       if (children != null) {
         for (final File child : children) {
-          scanDirectory(child, thumpPath + "/" + file.getName(), scaleHeight);
+          scanDirectory(child, thumpPath + "/" + file.getName(), scaleHeight,strText);
         }
       }
     }
@@ -80,6 +89,13 @@ public class ImageService {
       return ImageProcessing.resize(currentImagePath, outputImagePath, 200);
     }
     return false;
+  }
+
+  private String  addTextWatermark(String text, String sourceImagePath, String destImagePath,String fileName){
+    fileName = fileName.substring(0, fileName.indexOf("."));
+    fileName = fileName+"-Watermark."+sourceImagePath.substring(sourceImagePath.lastIndexOf(".") + 1);
+    return ImageProcessing.addTextWatermark(text,sourceImagePath,destImagePath+"/"+fileName);
+
   }
 
   private String splitName(String fileName) {

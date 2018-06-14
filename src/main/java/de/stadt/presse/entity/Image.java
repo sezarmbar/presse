@@ -3,6 +3,7 @@ package de.stadt.presse.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import org.hibernate.annotations.Type;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -41,14 +42,22 @@ public class Image {
   private String imageThumpPath;
 
   @JsonProperty
+  @Column(name = "image_watermark_path")
+  private String imageWatermarkPath;
+
+  @JsonProperty
 //  @Enumerated(value=EnumType.STRING)
   @Column(name = "image_type")
   private String imageType;
 
   @JsonProperty
   @Column(name = "image_keywords")
+  @Type(type="text")
   private String imageKeywords;
 
+  @JsonProperty
+  @Column(name = "image_have_metadata")
+  private boolean imageHaveMetadata;
 
   @Column(nullable = false, updatable = false)
   @Temporal(TemporalType.TIMESTAMP)

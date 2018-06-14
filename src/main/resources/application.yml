@@ -8,5 +8,5 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.MySQL5Dialect
 #    show-sql: true
-    hibernate:
-      ddl-auto: update
+    hibernate: # validate | update | create | create-drop
+      ddl-auto: create-drop

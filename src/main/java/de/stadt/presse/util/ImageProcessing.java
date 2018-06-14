@@ -21,34 +21,34 @@ import java.util.Iterator;
 import java.util.List;
 
 public class ImageProcessing {
-//  public static void main(String[] args) throws IOException {
-//    String drive = "E:/Fotolia/Hintergründe/",
-//      n = "",
-//      orgName = "Abstraktes Muster_aSuruwataRi_Fotolia",
-//      type = ".jpg";
+  public static void main(String[] args) throws IOException {
+    String drive = "E:/Fotolia/Hintergründe/",
+      n = "",
+      orgName = "Abstraktes Muster_aSuruwataRi_Fotolia",
+      type = ".jpg";
+
+    String prefix = drive + n + orgName;
+
+    String org = prefix + type,
+      compressed = prefix + "-c" + type,
+      watermark = prefix + "-wmT" + type,
+      watermarkImage = prefix + "-wmI" + type;
+
+    String waterImage = "E:/foloParent/tmp/logo.png";
+
+    File filename = new File(org);
+    File desFileCompress = new File(compressed);
+    File desFileWatermark = new File(watermark);
+    File desFileWatermarkImage = new File(watermarkImage);
+    File inWaterImageFile = new File(waterImage);
+
+//    readImageMetadata(org);
+//    compressImageThump(filename, desFileCompress);
+//    addTextWatermark("Press Oldenburg", desFileCompress, desFileWatermark);
+//    addImageWatermark(inWaterImageFile, desFileCompress, desFileWatermarkImage);
 //
-//    String prefix = drive + n + orgName;
-//
-//    String org = prefix + type,
-//      compressed = prefix + "-c" + type,
-//      watermark = prefix + "-wmT" + type,
-//      watermarkImage = prefix + "-wmI" + type;
-//
-//    String waterImage = "E:/foloParent/tmp/logo.png";
-//
-//    File filename = new File(org);
-//    File desFileCompress = new File(compressed);
-//    File desFileWatermark = new File(watermark);
-//    File desFileWatermarkImage = new File(watermarkImage);
-//    File inWaterImageFile = new File(waterImage);
-//
-////    readImageMetadata(org);
-////    compressImageThump(filename, desFileCompress);
-////    addTextWatermark("Press Oldenburg", desFileCompress, desFileWatermark);
-////    addImageWatermark(inWaterImageFile, desFileCompress, desFileWatermarkImage);
-////
-//    resize("D:\\pics\\Fotolia\\Icons\\Einzelne\\Abl.jpg", "d:/01-i.jpg", 1000);
-//  }
+    resize("D:\\pics\\Fotolia\\Icons\\Einzelne\\Abl.jpg", "d:/01-i.jpg", 1000);
+  }
 
 
   /**
@@ -105,7 +105,7 @@ public class ImageProcessing {
    * @param sourceImagePath : Original image
    * @param destImagePath   : where to write processed image
    */
-  public static void addTextWatermark(String text, String sourceImagePath, String destImagePath) {
+  public static String addTextWatermark(String text, String sourceImagePath, String destImagePath) {
     try {
       File sourceImageFile = new File(sourceImagePath);
       File destImageFile = new File(destImagePath);
@@ -127,14 +127,16 @@ public class ImageProcessing {
 
       // paints the textual watermark
       g2d.drawString(text, centerX, centerY);
+      String formatName = sourceImagePath.substring(sourceImagePath.lastIndexOf(".") + 1);
 
-      ImageIO.write(sourceImage, "jpg", destImageFile);
+      ImageIO.write(sourceImage, formatName, destImageFile);
       g2d.dispose();
 
-      System.out.println("The tex watermark is added to the image.");
+      return destImageFile.getPath();
 
     } catch (IOException ex) {
       ex.printStackTrace();
+      return "null";
     }
   }
 
@@ -166,10 +168,10 @@ public class ImageProcessing {
       // paints the image watermark
       g2d.drawImage(watermarkImage, topLeftX, topLeftY, null);
 
-      ImageIO.write(sourceImage, "jpg", destImageFile);
-      g2d.dispose();
+      String formatName = sourceImagePath.substring(sourceImagePath.lastIndexOf(".") + 1);
 
-      System.out.println("The image watermark is added to the image.");
+      ImageIO.write(sourceImage, formatName, destImageFile);
+      g2d.dispose();
 
     } catch (IOException ex) {
       System.err.println("addImageWatermark :" + ex);
@@ -214,8 +216,7 @@ public class ImageProcessing {
       }
 
       // extracts extension of output file
-      String formatName = outputImagePath.substring(outputImagePath
-        .lastIndexOf(".") + 1);
+      String formatName = outputImagePath.substring(outputImagePath.lastIndexOf(".") + 1);
       // writes to output file
       ImageIO.write(outputImage, formatName, new File(outputImagePath));
       return true;
