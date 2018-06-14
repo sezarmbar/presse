@@ -52,7 +52,7 @@ class ScanDirs {
       image = new Image();
       image.setImageName(file.getName());
       image.setImagePath(file.getPath());
-      image.setImageKeywords(readImageMetadata(file.getPath(), thumpPath + "/" + file.getName()) +
+      image.setImageAllKeywords(readImageMetadata(file.getPath(), thumpPath + "/" + file.getName()) +
         ";" + splitName(file.getName()));
       image.setImageType(file.getName().substring(file.getName().indexOf(".") + 1));
       if (resize(file.getPath(), thumpPath + "/" + file.getName(), scaleHeight)) {

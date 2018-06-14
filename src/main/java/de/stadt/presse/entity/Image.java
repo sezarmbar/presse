@@ -1,5 +1,6 @@
 package de.stadt.presse.entity;
 
+import com.drew.lang.annotations.NotNull;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
@@ -9,11 +10,12 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
-@Table(name = "image_index")
+@Table(name = "images")
 @EntityListeners(AuditingEntityListener.class)
 @JsonIgnoreProperties(value = {"createdAt", "updatedAt"},
   allowGetters = true)
@@ -23,16 +25,16 @@ public class Image {
   }
 
   @Id
-
-  @GeneratedValue(strategy = GenerationType.IDENTITY) @JsonProperty
-  private Long imageId;
-
-  @NotBlank
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   @JsonProperty
-  @Column(name = "image_name")
+  private Long id;
+
+  @NotNull
+  @JsonProperty
+  @Column(name = "image_name",unique = true)
   private String imageName;
 
-  @NotBlank
+  @NotNull
   @JsonProperty
   @Column(name = "image_path")
   private String imagePath;
@@ -51,19 +53,13 @@ public class Image {
   private String imageType;
 
   @JsonProperty
-  @Column(name = "image_keywords")
+  @Column(name = "image_all_keywords")
   @Type(type="text")
-  private String imageKeywords;
+  private String imageAllKeywords;
 
   @JsonProperty
   @Column(name = "image_have_metadata")
   private boolean imageHaveMetadata;
-
-  @Column(nullable = false, updatable = false)
-  @Temporal(TemporalType.TIMESTAMP)
-  @CreatedDate
-  @JsonProperty
-  private Date createdAt;
 
   @Column(nullable = false)
   @Temporal(TemporalType.TIMESTAMP)
@@ -71,5 +67,20 @@ public class Image {
   @JsonProperty
   private Date updatedAt;
 
+  @Column(nullable = false, updatable = false)
+  @Temporal(TemporalType.TIMESTAMP)
+  @CreatedDate
+  @JsonProperty
+  private Date createdAt;
+
+  @ManyToMany(fetch = FetchType.LAZY,
+    cascade = {
+      CascadeType.PERSIST,
+      CascadeType.MERGE
+    })
+  @JoinTable(name = "images_Keywords",
+    joinColumns = { @JoinColumn(name = "image_id") },
+    inverseJoinColumns = { @JoinColumn(name = "Keyword_id") })
+  private Set<Keyword> keywords = new HashSet<>();
 
 }

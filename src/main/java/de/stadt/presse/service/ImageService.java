@@ -49,7 +49,7 @@ public class ImageService {
       }else {
         image.setImageHaveMetadata(true);
       }
-      image.setImageKeywords(metadataKeywords+
+      image.setImageAllKeywords(metadataKeywords+
         ";" + splitName(file.getName()));
       image.setImageType(file.getName().substring(file.getName().indexOf(".") + 1));
 
