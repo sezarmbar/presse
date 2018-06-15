@@ -1,6 +1,7 @@
 package de.stadt.presse.service;
 
 import de.stadt.presse.entity.Image;
+import de.stadt.presse.entity.Keyword;
 import de.stadt.presse.repository.ImageRepository;
 import de.stadt.presse.util.ImageProcessing;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,13 +12,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class ImageService {
 
   @Autowired
   private ImageRepository imageRepository;
+
+  @Autowired
+  private KeywordsService keywordsService;
 
   public Image save(Image image) {
     return imageRepository.save(image);
@@ -33,7 +37,7 @@ public class ImageService {
     scanDirectory(folder, thumpPath, scaleHeight,strText);
     return true;
   }
-
+//https://www.callicoder.com/hibernate-spring-boot-jpa-many-to-many-mapping-example/
 
   private void scanDirectory(final File file, String thumpPath, int scaleHeight,String strText) {
 
@@ -49,8 +53,19 @@ public class ImageService {
       }else {
         image.setImageHaveMetadata(true);
       }
-      image.setImageAllKeywords(metadataKeywords+
-        ";" + splitName(file.getName()));
+      image.setImageAllKeywords(metadataKeywords+ ";" + splitName(file.getName()));
+      Set<String> keywordsSet = splitKeywordsToArray(metadataKeywords);
+      keywordsSet.forEach(key -> {
+        Keyword keyword ;
+        Keyword fendedKeyword = keywordsService.findByKeywordEn(key);
+        System.out.println(fendedKeyword);
+        if(fendedKeyword!= null){
+          keyword = fendedKeyword;
+        }else {
+          keyword = new Keyword(key);
+        }
+        image.getKeywords().add(keyword);
+      });
       image.setImageType(file.getName().substring(file.getName().indexOf(".") + 1));
 
       if (resize(file.getPath(), thumpPath + "/" + file.getName(), scaleHeight)) {
@@ -102,6 +117,11 @@ public class ImageService {
     String string = fileName.replace("_", ";");
     string = string.substring(0, string.indexOf("."));
     return string;
+  }
+
+  private Set<String> splitKeywordsToArray(String keywords){
+    Set<String> keywordsArray = new HashSet<>(Arrays.asList(keywords.split(";")));
+    return keywordsArray;
   }
 
 

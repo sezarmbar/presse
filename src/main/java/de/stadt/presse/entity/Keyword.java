@@ -21,13 +21,13 @@ public class Keyword {
 
   @NotBlank
   @JsonProperty
-  @Column(name = "keyword_name")
-  private String keywordName;
+  @Column(name = "keyword_en")
+  private String keywordEn;
 
-  @NotBlank
+//  @NotBlank
   @JsonProperty
-  @Column(name = "keyword_name_De")
-  private String keywordNameDe;
+  @Column(name = "keyword_De")
+  private String keywordDe;
 
 
 @ManyToMany(fetch = FetchType.LAZY,
@@ -37,4 +37,15 @@ public class Keyword {
             },
             mappedBy = "keywords")
     private Set<Image> images= new HashSet<>();
+
+  public Keyword(String keywordEn) {
+    this.keywordEn = keywordEn;
+  }
+
+  @Override
+  public String toString() {
+    return "Keyword{" +
+      "keywordEn='" + keywordEn + '\'' +
+      '}';
+  }
 }
