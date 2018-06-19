@@ -9,6 +9,7 @@ import java.util.List;
 @Repository
 public interface KeywordsRepository extends JpaRepository<Keyword,Long> {
 
+
   Keyword findByKeywordEn(String keywordEn);
 
 }

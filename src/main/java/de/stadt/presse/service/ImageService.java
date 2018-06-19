@@ -4,15 +4,19 @@ import de.stadt.presse.entity.Image;
 import de.stadt.presse.entity.Keyword;
 import de.stadt.presse.repository.ImageRepository;
 import de.stadt.presse.util.ImageProcessing;
+import org.hibernate.HibernateError;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.NonUniqueResultException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class ImageService {
@@ -31,8 +35,10 @@ public class ImageService {
     return imageRepository.findAll();
   }
 
+  private String googleVisionLocalPath;
 
-  public boolean scanDirs(String folderPath, String thumpPath, int scaleHeight,String strText) {
+  public boolean scanDirs(String folderPath, String thumpPath,String googleVisionLocalPath, int scaleHeight,String strText) {
+    this.googleVisionLocalPath = googleVisionLocalPath;
     File folder = new File(folderPath);
     scanDirectory(folder, thumpPath, scaleHeight,strText);
     return true;
@@ -43,29 +49,38 @@ public class ImageService {
 
     if (file.isDirectory()) {
       createDirectory(thumpPath + "/" + file.getName());
-    } else if (file.isFile()) {
+    } else if (file.isFile() && ImageProcessing.isImage(file.getPath()))  {
       Image image = new Image();
       image.setImageName(file.getName());
       image.setImagePath(file.getPath());
       String metadataKeywords =readImageMetadata(file.getPath(), thumpPath + "/" + file.getName());
+
       if (metadataKeywords=="null"){
         image.setImageHaveMetadata(false);
+        resizeForGoogleVision(file.getPath(), googleVisionLocalPath + "/" + file.getName(), 2000);
       }else {
         image.setImageHaveMetadata(true);
       }
+
       image.setImageAllKeywords(metadataKeywords+ ";" + splitName(file.getName()));
       Set<String> keywordsSet = splitKeywordsToArray(metadataKeywords);
+
       keywordsSet.forEach(key -> {
         Keyword keyword ;
-        Keyword fendedKeyword = keywordsService.findByKeywordEn(key);
-        System.out.println(fendedKeyword);
+        Keyword fendedKeyword = keywordsService.findByKeywordEn(key.toLowerCase());
         if(fendedKeyword!= null){
           keyword = fendedKeyword;
         }else {
-          keyword = new Keyword(key);
+          keyword = new Keyword(key.toLowerCase());
         }
-        image.getKeywords().add(keyword);
+
+        if(checkIfLatinLetters(key)){
+          image.getKeywords().add(keyword);
+        }else {
+          System.out.println(key);
+        }
       });
+
       image.setImageType(file.getName().substring(file.getName().indexOf(".") + 1));
 
       if (resize(file.getPath(), thumpPath + "/" + file.getName(), scaleHeight)) {
@@ -106,11 +121,18 @@ public class ImageService {
     return false;
   }
 
-  private String  addTextWatermark(String text, String sourceImagePath, String destImagePath,String fileName){
-    fileName = fileName.substring(0, fileName.indexOf("."));
-    fileName = fileName+"-Watermark."+sourceImagePath.substring(sourceImagePath.lastIndexOf(".") + 1);
-    return ImageProcessing.addTextWatermark(text,sourceImagePath,destImagePath+"/"+fileName);
+  private boolean resizeForGoogleVision(String currentImagePath, String outputImagePath, int scaleHeight) {
+    if (!Files.exists(Paths.get(outputImagePath))&& ImageProcessing.isImage(currentImagePath)) {
+      return ImageProcessing.resize(currentImagePath, outputImagePath, 200);
+    }
+    return false;
+  }
 
+  private String  addTextWatermark(String text, String sourceImagePath, String destImagePath,String fileName){
+
+      fileName = fileName.substring(0, fileName.indexOf("."));
+      fileName = fileName + "-Watermark." + sourceImagePath.substring(sourceImagePath.lastIndexOf(".") + 1);
+      return ImageProcessing.addTextWatermark(text, sourceImagePath, destImagePath + "/" + fileName);
   }
 
   private String splitName(String fileName) {
@@ -124,6 +146,21 @@ public class ImageService {
     return keywordsArray;
   }
 
+  /**
+   * check if text Latin
+   */
+  private boolean checkIfLatinLetters(String key){
+    Pattern pattern = Pattern.compile(
+      "[" +                   //начало списка допустимых символов
+        "a-zA-ZäÄöÖüÜß" +    //буквы русского алфавита
+        "\\d" +         //цифры
+        "\\s" +         //знаки-разделители (пробел, табуляция и т.д.)
+        "\\p{Punct}" +  //знаки пунктуации
+        "]" +                   //конец списка допустимых символов
+        "*");
+    Matcher matcher = pattern.matcher(key);
+    return matcher.matches();
+  }
 
   /**
    * create Folder

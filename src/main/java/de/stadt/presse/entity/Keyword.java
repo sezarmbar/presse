@@ -42,10 +42,14 @@ public class Keyword {
     this.keywordEn = keywordEn;
   }
 
+  public Keyword() {
+  }
+
   @Override
   public String toString() {
     return "Keyword{" +
       "keywordEn='" + keywordEn + '\'' +
       '}';
   }
+
 }

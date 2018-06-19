@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class ImageProcessing {
   public static void main(String[] args) throws IOException {
@@ -134,8 +135,9 @@ public class ImageProcessing {
 
       return destImageFile.getPath();
 
-    } catch (IOException ex) {
+    } catch (IOException | NullPointerException ex) {
       ex.printStackTrace();
+      System.out.println("sourceImagePath   : " + sourceImagePath +"destImagePath  : " + destImagePath  );
       return "null";
     }
   }
