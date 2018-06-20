@@ -4,11 +4,13 @@ import de.stadt.presse.entity.Image;
 import de.stadt.presse.entity.Keyword;
 import de.stadt.presse.repository.ImageRepository;
 import de.stadt.presse.util.ImageProcessing;
+import org.hibernate.event.spi.SaveOrUpdateEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -58,13 +60,15 @@ public class ImageService {
 
       if (metadataKeywords == "null") {
         image.setImageHaveMetadata(false);
+        image.setImageAllKeywords(splitName(file.getName()));
         resizeForGoogleVision(file.getPath(), googleVisionLocalPath + "/" + file.getName(), 2000);
       } else {
         image.setImageHaveMetadata(true);
+        image.setImageAllKeywords(metadataKeywords + ";" + splitName(file.getName()));
       }
 
-      image.setImageAllKeywords(metadataKeywords + ";" + splitName(file.getName()));
-      Set<String> keywordsSet = splitKeywordsToArray(metadataKeywords, ";");
+
+      Set<String> keywordsSet = splitKeywordsToArray(image.getImageAllKeywords(), ";");
 
       keywordsSet.forEach(key -> {
         Set<String> keySet = splitKeywordsToArray(key, ",");
@@ -117,6 +121,7 @@ public class ImageService {
       image.getKeywords().add(keyword);
     } else {
       System.out.println(key);
+      image.setImageHaveMetadata(false);
     }
   }
 
@@ -166,7 +171,7 @@ public class ImageService {
   private boolean checkIfLatinLetters(String key) {
     Pattern pattern = Pattern.compile(
       "[" +                   //начало списка допустимых символов
-        "a-zA-ZäÄöÖüÜß" +    //буквы русского алфавита
+        "a-zA-ZäÄöÖüÜßé" +    //буквы русского алфавита
         "\\d" +         //цифры
         "\\s" +         //знаки-разделители (пробел, табуляция и т.д.)
         "\\p{Punct}" +  //знаки пунктуации
