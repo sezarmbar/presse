@@ -31,7 +31,8 @@ public class Image {
 
   @NotNull
   @JsonProperty
-  @Column(name = "image_name",unique = true)
+  @Column(name = "image_name")
+//  @Column(name = "image_name",unique = true)
   private String imageName;
 
   @NotNull

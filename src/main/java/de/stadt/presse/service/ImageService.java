@@ -4,13 +4,11 @@ import de.stadt.presse.entity.Image;
 import de.stadt.presse.entity.Keyword;
 import de.stadt.presse.repository.ImageRepository;
 import de.stadt.presse.util.ImageProcessing;
-import org.hibernate.event.spi.SaveOrUpdateEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -52,7 +50,7 @@ public class ImageService {
 
     if (file.isDirectory()) {
       createDirectory(thumpPath + "/" + file.getName());
-    } else if (file.isFile() && ImageProcessing.isImage(file.getPath())) {
+    } else if (file.isFile() && ImageProcessing.isImage(file.getPath()) ) {
       Image image = new Image();
       image.setImageName(file.getName());
       image.setImagePath(file.getPath());
@@ -142,7 +140,8 @@ public class ImageService {
 
   private boolean resizeForGoogleVision(String currentImagePath, String outputImagePath, int scaleHeight) {
     if (!Files.exists(Paths.get(outputImagePath)) && ImageProcessing.isImage(currentImagePath)) {
-      return ImageProcessing.resize(currentImagePath, outputImagePath, 200);
+       ImageProcessing.compressImageThump(currentImagePath, outputImagePath);
+      return ImageProcessing.resize(outputImagePath, outputImagePath, 2000);
     }
     return false;
   }
@@ -166,7 +165,7 @@ public class ImageService {
   }
 
   /**
-   * check if text Latin
+   * check if text have a Latin letters
    */
   private boolean checkIfLatinLetters(String key) {
     Pattern pattern = Pattern.compile(

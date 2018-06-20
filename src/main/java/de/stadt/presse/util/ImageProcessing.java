@@ -69,7 +69,7 @@ public class ImageProcessing {
     }
   }
 
-  public static void compressImageThump(String imagePath, String compressedImagePath) {
+  public static boolean compressImageThump(String imagePath, String compressedImagePath) {
     try {
       File imageFile = new File(imagePath);
       File compressedImageFile = new File(compressedImagePath);
@@ -87,14 +87,16 @@ public class ImageProcessing {
       ImageWriteParam param = writer.getDefaultWriteParam();
 
       param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-      param.setCompressionQuality(0.2f);
+      param.setCompressionQuality(0.5f);
       writer.write(null, new IIOImage(image, null, null), param);
 
       os.close();
       ios.close();
       writer.dispose();
+      return true;
     } catch (IOException e) {
       e.printStackTrace();
+      return false;
     }
   }
 

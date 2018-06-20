@@ -10,3 +10,5 @@ spring:
 #    show-sql: true
     hibernate: # validate | update | create | create-drop
       ddl-auto: create-drop
+logging:
+    file: /logs/application-debug.log
