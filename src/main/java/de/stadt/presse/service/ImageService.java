@@ -70,10 +70,10 @@ public class ImageService {
         Set<String> keySet = splitKeywordsToArray(key, ",");
         if (keySet.size() > 1) {
           keySet.forEach(subKey -> {
-            addKeyowrdToImageSet(subKey, image);
+            addKeywordToImageSet(subKey, image);
           });
         } else {
-          addKeyowrdToImageSet(key, image);
+          addKeywordToImageSet(key, image);
         }
       });
 
@@ -105,7 +105,7 @@ public class ImageService {
     }
   }
 
-  private void addKeyowrdToImageSet(String key, Image image) {
+  private void addKeywordToImageSet(String key, Image image) {
     Keyword keyword;
     Keyword fendedKeyword = keywordsService.findByKeywordEn(key.toLowerCase());
     if (fendedKeyword != null) {
