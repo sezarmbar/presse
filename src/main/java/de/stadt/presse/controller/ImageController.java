@@ -26,10 +26,16 @@ public class ImageController {
   }
 
   @PostMapping("/scan")
-  public boolean scanDiryctory(@RequestParam("folder") String folder,
+  public boolean scanDiryctory(
+                               //  D:\pics\Fotolia\Gesundheit & Essen & Sport
+                               @RequestParam("folder") String folder ,
+//                              d:/thump
                                @RequestParam("thumpPath") String thumpPath,
+//                               d:/googleVision
                                @RequestParam("googleVisionLocalPath") String googleVisionLocalPath,
+//                                150
                                @RequestParam("scaleHeight") Integer scaleHeight,
+//                               some Text "Oldenburg"
                                @RequestParam("strText") String strText) {
     return imageService.scanDirs(folder,thumpPath,googleVisionLocalPath,scaleHeight,strText);
 
