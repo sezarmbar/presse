@@ -7,8 +7,14 @@ spring:
     initialize: false
   jpa:
     database-platform: org.hibernate.dialect.MySQL5Dialect
-#    show-sql: true
+    show-sql: true
     hibernate: # validate | update | create | create-drop
       ddl-auto: create-drop
 logging:
-    file: /logs/application-debug.log
+  level:
+    org.springframework.web: ERROR
+    de.stadt.presse: DEBUG
+  file: application.log
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
