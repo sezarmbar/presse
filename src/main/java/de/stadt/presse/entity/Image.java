@@ -10,12 +10,12 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Entity
-@Table(name = "images")
+@Table(name = "images"
+//  , uniqueConstraints= @UniqueConstraint(columnNames={"image_name", "image_path"})
+)
 @EntityListeners(AuditingEntityListener.class)
 @JsonIgnoreProperties(value = {"createdAt", "updatedAt"},
   allowGetters = true)
@@ -74,14 +74,10 @@ public class Image {
   @JsonProperty
   private Date createdAt;
 
-  @ManyToMany(fetch = FetchType.LAZY,
-    cascade = {
-      CascadeType.PERSIST,
-      CascadeType.MERGE
-    })
+  @ManyToMany(cascade = CascadeType.ALL)
   @JoinTable(name = "images_Keywords",
     joinColumns = { @JoinColumn(name = "image_id") },
     inverseJoinColumns = { @JoinColumn(name = "Keyword_id") })
-  private Set<Keyword> keywords = new HashSet<>();
+  private List<Keyword> keywords = new ArrayList<>();
 
 }

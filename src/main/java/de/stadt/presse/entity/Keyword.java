@@ -21,7 +21,7 @@ public class Keyword {
 
   @NotBlank
   @JsonProperty
-  @Column(name = "keyword_en")
+  @Column(name = "keyword_en", nullable = false, unique = true)
   private String keywordEn;
 
 //  @NotBlank
@@ -30,13 +30,13 @@ public class Keyword {
   private String keywordDe;
 
 
-@ManyToMany(fetch = FetchType.LAZY,
-            cascade = {
-                CascadeType.PERSIST,
-                CascadeType.MERGE
-            },
-            mappedBy = "keywords")
-    private Set<Image> images= new HashSet<>();
+//@ManyToMany(fetch = FetchType.LAZY,
+//            cascade = {
+//                CascadeType.PERSIST,
+//                CascadeType.MERGE
+//            },
+//            mappedBy = "keywords")
+//    private Set<Image> images= new HashSet<>();
 
   public Keyword(String keywordEn) {
     this.keywordEn = keywordEn;
