@@ -35,9 +35,10 @@ public class ImageController {
                                @RequestParam("googleVisionLocalPath") String googleVisionLocalPath,
 //                                150
                                @RequestParam("scaleHeight") Integer scaleHeight,
+                               @RequestParam("scaleHeightForGoogleVision") Integer scaleHeightForGoogleVision,
 //                               some Text "Oldenburg"
                                @RequestParam("strText") String strText) {
-    return imageService.scanDirs(folder,thumpPath,googleVisionLocalPath,scaleHeight,strText);
+    return imageService.scanDirs(folder,thumpPath,googleVisionLocalPath,scaleHeight,scaleHeightForGoogleVision,strText);
 
   }
 
