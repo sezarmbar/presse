@@ -28,6 +28,10 @@ public class ImageService {
   @Autowired
   private KeywordsService keywordsService;
 
+  private int scaleHeightForGoogleVision,scaleHeight;
+
+  private String strText;
+
   public Image save(Image image) {
     return imageRepository.save(image);
   }
@@ -38,19 +42,62 @@ public class ImageService {
 
   private String googleVisionLocalPath;
 
-  public boolean scanDirs(String folderPath, String thumpPath, String googleVisionLocalPath, int scaleHeight, String strText) {
+  public boolean scanDirs(String folderPath, String thumpPath, String googleVisionLocalPath,
+                          int scaleHeight, int scaleHeightForGoogleVision, String strText) {
+
     this.googleVisionLocalPath = googleVisionLocalPath;
+    this.scaleHeight = scaleHeight;
+    this.scaleHeightForGoogleVision = scaleHeightForGoogleVision;
+    this.strText = strText;
     File folder = new File(folderPath);
-    scanDirectory(folder, thumpPath, scaleHeight, strText);
+    scanDirectory(folder, thumpPath);
     return true;
   }
 //https://www.callicoder.com/hibernate-spring-boot-jpa-many-to-many-mapping-example/
 
-  private void scanDirectory(final File file, String thumpPath, int scaleHeight, String strText) {
+  private void scanDirectory(final File file, String thumpPath) {
 
     if (file.isDirectory()) {
       createDirectory(thumpPath + "/" + file.getName());
-    } else if (file.isFile() && ImageProcessing.isImage(file.getPath()) ) {
+    } else if (file.isFile() && ImageProcessing.isImage(file.getPath())) {
+
+      String imageExtension = ImageProcessing.determineImageFormat(file.getPath());
+
+      if ( imageRepository.findByImagePath(file.getPath()) == null) {
+        if (imageExtension == "JPEG") {
+          saveJPGImage(file, thumpPath);
+        } else if (imageExtension == "png") {
+          savePNGImage(file, thumpPath);
+        }
+      } else {
+        System.out.println("have a simaler image in database with this Data   : " + file.getPath());
+
+      }
+
+    } else {
+      System.out.println("the file not image   : " + file.getPath());
+    }
+
+    // Ignore files which are not files and dirs
+//    if (file.isFile()) {} else {
+    if (!file.isFile()) {
+      final File[] children = file.listFiles();
+      if (children != null) {
+        for (final File child : children) {
+          scanDirectory(child, thumpPath + "/" + file.getName());
+        }
+      }
+    }
+  }
+
+  private boolean savePNGImage(File file, String thumpPath) {
+    ImageProcessing.copyPNG(file, new File(thumpPath));
+
+    return false;
+  }
+
+  private boolean saveJPGImage(File file, String thumpPath) {
+    try {
       Image image = new Image();
       image.setImageName(file.getName());
       image.setImagePath(file.getPath());
@@ -58,22 +105,21 @@ public class ImageService {
 
       if (metadataKeywords == "null") {
         image.setImageHaveMetadata(false);
+        System.out.println("image ImageHaveMetadata false : " + image.isImageHaveMetadata());
         image.setImageAllKeywords(splitName(file.getName()));
-        resizeForGoogleVision(file.getPath(), googleVisionLocalPath + "/" + file.getName(), 2000);
+        resizeForGoogleVision(file.getPath(), googleVisionLocalPath + "/" + file.getName());
       } else {
-        image.setImageHaveMetadata(true);
         image.setImageAllKeywords(metadataKeywords + ";" + splitName(file.getName()));
+        image.setImageHaveMetadata(true);
       }
 
-
       Set<String> keywordsSet = splitKeywordsToArray(image.getImageAllKeywords(), ";");
-
       keywordsSet.forEach(key -> {
         Set<String> keySet = splitKeywordsToArray(key, ",");
         if (keySet.size() > 1) {
-          keySet.forEach(subKey -> {
-            addKeywordToImageSet(subKey, image);
-          });
+          keySet.forEach(subKey ->
+            addKeywordToImageSet(subKey, image)
+          );
         } else {
           addKeywordToImageSet(key, image);
         }
@@ -81,7 +127,7 @@ public class ImageService {
 
       image.setImageType(file.getName().substring(file.getName().indexOf(".") + 1));
 
-      if (resize(file.getPath(), thumpPath + "/" + file.getName(), scaleHeight)) {
+      if (resize(file.getPath(), thumpPath + "/" + file.getName())) {
         image.setImageThumpPath(thumpPath + "/" + file.getName());
       } else {
         File isFileExist = new File(thumpPath + "/" + file.getName());
@@ -93,32 +139,27 @@ public class ImageService {
       image.setImageWatermarkPath(addTextWatermark(strText, file.getPath(), thumpPath, file.getName()));
 
       save(image);
-    }
 
-    // Ignore files which are not files and dirs
-//    if (file.isFile()) {} else {
-    if (!file.isFile()) {
-      final File[] children = file.listFiles();
-      if (children != null) {
-        for (final File child : children) {
-          scanDirectory(child, thumpPath + "/" + file.getName(), scaleHeight, strText);
-        }
-      }
+      return true;
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      return false;
     }
   }
 
   private void addKeywordToImageSet(String key, Image image) {
-    Keyword keyword;
+    Keyword keyword, keywordCheck = new Keyword();
     Keyword fendedKeyword = keywordsService.findByKeywordEn(key.toLowerCase());
     if (fendedKeyword != null) {
       keyword = fendedKeyword;
     } else {
+      keywordCheck = image.getKeywords().stream().filter(keyword1 -> keyword1.getKeywordEn().contains(key)).findAny().orElse(null);
       keyword = new Keyword(key.toLowerCase());
     }
-    if (checkIfLatinLetters(key)) {
+    if (checkIfLatinLetters(key) && keywordCheck == null && !"".equals(key)) {
       image.getKeywords().add(keyword);
     } else {
-      System.out.println(key);
       image.setImageHaveMetadata(false);
     }
   }
@@ -131,17 +172,17 @@ public class ImageService {
     return "null";
   }
 
-  private boolean resize(String currentImagePath, String outputImagePath, int scaleHeight) {
+  private boolean resize(String currentImagePath, String outputImagePath) {
     if (!Files.exists(Paths.get(outputImagePath)) && ImageProcessing.isImage(currentImagePath)) {
-      return ImageProcessing.resize(currentImagePath, outputImagePath, 200);
+      return ImageProcessing.resize(currentImagePath, outputImagePath, scaleHeight);
     }
     return false;
   }
 
-  private boolean resizeForGoogleVision(String currentImagePath, String outputImagePath, int scaleHeight) {
+  private boolean resizeForGoogleVision(String currentImagePath, String outputImagePath) {
     if (!Files.exists(Paths.get(outputImagePath)) && ImageProcessing.isImage(currentImagePath)) {
-       ImageProcessing.compressImageThump(currentImagePath, outputImagePath);
-      return ImageProcessing.resize(outputImagePath, outputImagePath, 2000);
+      ImageProcessing.compressImageThump(currentImagePath, outputImagePath);
+      return ImageProcessing.resize(outputImagePath, outputImagePath, scaleHeightForGoogleVision);
     }
     return false;
   }
@@ -160,8 +201,7 @@ public class ImageService {
   }
 
   private Set<String> splitKeywordsToArray(String keywords, String splitCharacter) {
-    Set<String> keywordsArray = new HashSet<>(Arrays.asList(keywords.split(splitCharacter)));
-    return keywordsArray;
+    return new HashSet<>(Arrays.asList(keywords.split(splitCharacter)));
   }
 
   /**
