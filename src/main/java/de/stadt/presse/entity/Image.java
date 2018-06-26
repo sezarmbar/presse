@@ -37,7 +37,7 @@ public class Image {
 
   @NotNull
   @JsonProperty
-  @Column(name = "image_path")
+  @Column(name = "image_path",unique = true)
   private String imagePath;
 
   @JsonProperty
@@ -74,10 +74,10 @@ public class Image {
   @JsonProperty
   private Date createdAt;
 
-  @ManyToMany(cascade = CascadeType.ALL)
+  @ManyToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY)
   @JoinTable(name = "images_Keywords",
     joinColumns = { @JoinColumn(name = "image_id") },
     inverseJoinColumns = { @JoinColumn(name = "Keyword_id") })
-  private List<Keyword> keywords = new ArrayList<>();
+  private Set<Keyword> keywords = new HashSet<>();
 
 }
