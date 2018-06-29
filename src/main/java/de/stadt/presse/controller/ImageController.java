@@ -3,8 +3,14 @@ package de.stadt.presse.controller;
 
 
 import de.stadt.presse.entity.Image;
+import de.stadt.presse.entity.RequestsTable;
+import de.stadt.presse.repository.RequestsTableRepository;
 import de.stadt.presse.service.ImageService;
+import de.stadt.presse.service.RequestsTableService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -18,6 +24,13 @@ public class ImageController {
     private
   ImageService imageService;
 
+  @Autowired
+  private
+  RequestsTableService requestsTableService;
+
+  @Autowired
+  private
+  RequestsTableRepository requestsTableRepository;
 
   @PostMapping("/insert")
   public Image insert(@Valid @RequestBody Image image) {
@@ -26,7 +39,7 @@ public class ImageController {
   }
 
   @PostMapping("/scan")
-  public boolean scanDiryctory(
+  public ResponseEntity scanDiryctory(
                                //  D:\pics\Fotolia\Gesundheit & Essen & Sport
                                @RequestParam("folder") String folder ,
 //                              d:/thump
@@ -38,9 +51,21 @@ public class ImageController {
                                @RequestParam("scaleHeightForGoogleVision") Integer scaleHeightForGoogleVision,
 //                               some Text "Oldenburg"
                                @RequestParam("strText") String strText) {
-    return imageService.scanDirs(folder,thumpPath,googleVisionLocalPath,scaleHeight,scaleHeightForGoogleVision,strText);
+    return new ResponseEntity<>(
+      imageService.scanDirs(folder,thumpPath,googleVisionLocalPath,scaleHeight,scaleHeightForGoogleVision,strText)
+      , HttpStatus.OK);
 
   }
 
+
+  @PostMapping("/scanreq")
+  public ResponseEntity<?> post(@RequestBody RequestsTable requestsTable, BindingResult result) {
+    if (result.hasErrors()) {
+      return new ResponseEntity<>(result.getAllErrors(), HttpStatus.BAD_REQUEST);
+    }
+    requestsTableService.save(requestsTable);
+    return new ResponseEntity<>(imageService.scanDirs(requestsTable.getFolder(),requestsTable.getThumpPath(),requestsTable.getGoogleVisionLocalPath(),requestsTable.getScaleHeight(),
+      requestsTable.getScaleHeightForGoogleVision(),requestsTable.getStrText()), HttpStatus.OK);
+  }
 
 }
