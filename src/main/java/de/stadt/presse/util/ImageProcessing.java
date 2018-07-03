@@ -133,6 +133,7 @@ public class ImageProcessing {
       return destImageFile.getPath();
 
     } catch (IOException | NullPointerException ex) {
+      //TODO java.lang.NullPointerException
       ex.printStackTrace();
       System.out.println("sourceImagePath   : " + sourceImagePath + "destImagePath  : " + destImagePath);
       return "null";
@@ -274,8 +275,8 @@ public class ImageProcessing {
     } catch (NullPointerException | IOException e) {
       System.out.println("error IO................... " + inputImagePath);
       e.printStackTrace();
+      return false;
     }
-    return true;
   }
 
 

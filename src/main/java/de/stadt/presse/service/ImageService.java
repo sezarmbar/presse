@@ -69,7 +69,16 @@ public class ImageService {
         } else if (imageExtension == "png") {
           savePNGImage(file, thumpPath);
         }
-      } else {
+      }else if (!(new File(thumpPath + "/" + file.getName()).exists())){
+
+        Image image = imageRepository.findByImagePath(file.getPath());
+        if (resize(file.getPath(), thumpPath + "/" + file.getName())) {
+          image.setImageThumpPath(thumpPath + "/" + file.getName());
+        }
+        image.setImageWatermarkPath(addTextWatermark( file.getPath(), thumpPath, file.getName()));
+        save(image);
+      }
+      else {
         System.out.println("have a simaler image in database with this Data   : " + file.getPath());
 
       }
@@ -137,7 +146,7 @@ public class ImageService {
         }
       }
 
-      image.setImageWatermarkPath(addTextWatermark(strText, file.getPath(), thumpPath, file.getName()));
+      image.setImageWatermarkPath(addTextWatermark( file.getPath(), thumpPath, file.getName()));
 
       save(image);
 
@@ -182,17 +191,21 @@ public class ImageService {
 
   private boolean resizeForGoogleVision(String currentImagePath, String outputImagePath) {
     if (!Files.exists(Paths.get(outputImagePath)) && ImageProcessing.isImage(currentImagePath)) {
-      ImageProcessing.compressImageThump(currentImagePath, outputImagePath);
-      return ImageProcessing.resize(outputImagePath, outputImagePath, scaleHeightForGoogleVision);
+      boolean isCompressed = ImageProcessing.compressImageThump(currentImagePath, outputImagePath);
+      if(isCompressed){
+        return ImageProcessing.resize(outputImagePath, outputImagePath, scaleHeightForGoogleVision);
+      }else {
+        return false;
+      }
     }
     return false;
   }
 
-  private String addTextWatermark(String text, String sourceImagePath, String destImagePath, String fileName) {
+  private String addTextWatermark( String sourceImagePath, String destImagePath, String fileName) {
 
     fileName = fileName.substring(0, fileName.indexOf("."));
     fileName = fileName + "-Watermark." + sourceImagePath.substring(sourceImagePath.lastIndexOf(".") + 1);
-    return ImageProcessing.addTextWatermark(text, sourceImagePath, destImagePath + "/" + fileName);
+    return ImageProcessing.addTextWatermark(strText, sourceImagePath, destImagePath + "/" + fileName);
   }
 
   private String splitName(String fileName) {
