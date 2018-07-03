@@ -60,10 +60,14 @@ public class ImageController {
 
   @PostMapping("/scanreq")
   public ResponseEntity<?> post(@RequestBody RequestsTable requestsTable, BindingResult result) {
+    RequestsTable savedRequest = requestsTableService.save(requestsTable);
     if (result.hasErrors()) {
+      savedRequest.setStatus(String.valueOf(HttpStatus.BAD_REQUEST));
+      requestsTableService.save(savedRequest);
       return new ResponseEntity<>(result.getAllErrors(), HttpStatus.BAD_REQUEST);
     }
-    requestsTableService.save(requestsTable);
+    savedRequest.setStatus(String.valueOf(HttpStatus.OK));
+    requestsTableService.save(savedRequest);
     return new ResponseEntity<>(imageService.scanDirs(requestsTable.getFolder(),requestsTable.getThumpPath(),requestsTable.getGoogleVisionLocalPath(),requestsTable.getScaleHeight(),
       requestsTable.getScaleHeightForGoogleVision(),requestsTable.getStrText()), HttpStatus.OK);
   }

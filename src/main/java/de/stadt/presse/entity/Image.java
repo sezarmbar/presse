@@ -3,10 +3,8 @@ package de.stadt.presse.entity;
 import com.drew.lang.annotations.NotNull;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
+
 import org.hibernate.annotations.Type;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -17,14 +15,11 @@ import java.util.*;
 
 @Entity
 @Table(name = "images")
-@ToString(exclude = {"keywords"})
-@EqualsAndHashCode(exclude = {"keywords"})
 @EntityListeners(AuditingEntityListener.class)
 @JsonIgnoreProperties(value = {"createdAt", "updatedAt"},allowGetters = true)
-@Data
+@Data @NoArgsConstructor(access = AccessLevel.PUBLIC)
+@ToString(exclude = {"keywords"}) @EqualsAndHashCode(exclude = {"keywords"})
 public class Image {
-  public Image() {
-  }
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

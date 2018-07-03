@@ -75,6 +75,7 @@ public class ImageService {
       }
 
     } else {
+      //TODO add entity for not processed files
       System.out.println("the file not image   : " + file.getPath());
     }
 
