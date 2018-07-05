@@ -57,13 +57,14 @@ public class ImageService {
 
   private void scanDirectory(final File file, String thumpPath) {
 
+    Image image = imageRepository.findByImagePath(file.getPath());
+
     if (file.isDirectory()) {
       createDirectory(thumpPath + "/" + file.getName());
     } else if (file.isFile() && ImageProcessing.isImage(file.getPath())) {
 
       String imageExtension = ImageProcessing.determineImageFormat(file.getPath());
-
-      if ( imageRepository.findByImagePath(file.getPath()) == null) {
+      if ( image == null) {
         if (imageExtension == "JPEG") {
           saveJPGImage(file, thumpPath);
         } else if (imageExtension == "png") {
@@ -71,12 +72,13 @@ public class ImageService {
         }
       }else if (!(new File(thumpPath + "/" + file.getName()).exists())){
 
-        Image image = imageRepository.findByImagePath(file.getPath());
         if (resize(file.getPath(), thumpPath + "/" + file.getName())) {
           image.setImageThumpPath(thumpPath + "/" + file.getName());
         }
         image.setImageWatermarkPath(addTextWatermark( file.getPath(), thumpPath, file.getName()));
         save(image);
+      }else if(!image.isImageHaveMetadata() && !(new File(googleVisionLocalPath+"/"+file.getName()).exists())){
+        resizeForGoogleVision(file.getPath(),googleVisionLocalPath+"/"+file.getName());
       }
       else {
         System.out.println("have a simaler image in database with this Data   : " + file.getPath());
@@ -115,7 +117,6 @@ public class ImageService {
 
       if (metadataKeywords == "null") {
         image.setImageHaveMetadata(false);
-        System.out.println("image ImageHaveMetadata false : " + image.isImageHaveMetadata());
         image.setImageAllKeywords(splitName(file.getName()));
         resizeForGoogleVision(file.getPath(), googleVisionLocalPath + "/" + file.getName());
       } else {
@@ -163,15 +164,15 @@ public class ImageService {
     Keyword fendedKeyword = keywordsService.findByKeywordEn(key.toLowerCase());
     if (fendedKeyword != null) {
       keyword = fendedKeyword;
+      image.getKeywords().add(keyword);
     } else {
       keywordCheck = image.getKeywords().stream().filter(keyword1 -> keyword1.getKeywordEn().contains(key)).findAny().orElse(null);
       keyword = new Keyword(key.toLowerCase());
+      if (checkIfLatinLetters(key) && keywordCheck == null && !"".equals(key)) {
+        image.getKeywords().add(keyword);
+      }
     }
-    if (checkIfLatinLetters(key) && keywordCheck == null && !"".equals(key)) {
-      image.getKeywords().add(keyword);
-    } else {
-      image.setImageHaveMetadata(false);
-    }
+
   }
 
 
