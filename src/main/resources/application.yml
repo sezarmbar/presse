@@ -13,7 +13,7 @@ spring:
       ddl-auto: create-drop
 logging:
   level:
-    org.springframework.web: ERROR
+    org.springframework.web: DEBUG
     org:
       hibernate:
       type: trace

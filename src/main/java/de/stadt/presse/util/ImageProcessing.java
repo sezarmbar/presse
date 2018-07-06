@@ -58,9 +58,8 @@ public class ImageProcessing {
       Metadata metadata = ImageMetadataReader.readMetadata(image);
       List<String> keyword = metadata.getFirstDirectoryOfType(IptcDirectory.class).getKeywords();
       return String.join(";", keyword);
-    } catch (ImageProcessingException | IOException | NullPointerException e) {
+    } catch (Exception e) {
       return "null";
-//      System.out.println("can't find the metadata ...");
     }
   }
 
@@ -89,8 +88,8 @@ public class ImageProcessing {
       ios.close();
       writer.dispose();
       return true;
-    } catch (IOException e) {
-      e.printStackTrace();
+    } catch (Exception e) {
+      System.out.println(" compressImageThump ..... "+ e.getClass());
       return false;
     }
   }
@@ -132,10 +131,9 @@ public class ImageProcessing {
 
       return destImageFile.getPath();
 
-    } catch (IOException | NullPointerException ex) {
+    } catch (Exception ex) {
       //TODO java.lang.NullPointerException
-      ex.printStackTrace();
-      System.out.println("sourceImagePath   : " + sourceImagePath + "destImagePath  : " + destImagePath);
+      System.out.println("sourceImagePath   : " + sourceImagePath + "destImagePath  : " + destImagePath + " .... " + ex.getClass());
       return "null";
     }
   }
@@ -173,8 +171,8 @@ public class ImageProcessing {
       ImageIO.write(sourceImage, formatName, destImageFile);
       g2d.dispose();
 
-    } catch (IOException ex) {
-      System.err.println("addImageWatermark :" + ex);
+    } catch (Exception ex) {
+      System.err.println("addImageWatermark :" + ex.getClass());
     }
   }
 
@@ -194,8 +192,8 @@ public class ImageProcessing {
       }
       in.close();
       out.close();
-    } catch (IOException e) {
-      e.printStackTrace();
+    } catch (Exception e) {
+      System.out.println("copyPNG ..." + e.getClass());
     }finally {
       System.out.println("image PNG have coped .....");
     }
@@ -224,8 +222,8 @@ public class ImageProcessing {
       iis.close();
       return format;
 
-    } catch (IOException e) {
-      e.printStackTrace();
+    } catch (Exception e) {
+      System.out.println(".....IOException determineImageFormat ...." + e.getClass());
       return null;
     }
   }
@@ -273,8 +271,7 @@ public class ImageProcessing {
       ImageIO.write(outputImage, formatName, new File(outputImagePath));
       return true;
     } catch (NullPointerException | IOException e) {
-      System.out.println("error IO................... " + inputImagePath);
-      e.printStackTrace();
+      System.out.println("error IO.........resize.......... " + inputImagePath);
       return false;
     }
   }

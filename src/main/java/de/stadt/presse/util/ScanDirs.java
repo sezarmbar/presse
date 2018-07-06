@@ -1,77 +1,186 @@
 package de.stadt.presse.util;
 
+
 import de.stadt.presse.entity.Image;
-import de.stadt.presse.repository.ImageRepository;
+import de.stadt.presse.entity.Keyword;
 import de.stadt.presse.service.ImageService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import de.stadt.presse.service.KeywordsService;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-//http://www.javacreed.com/java-fork-join-example/
-//public class MainThread {
-//  public static void main(String[] args) {
-//
-//    String path = "D:\\pics\\Fotolia\\Baustellen";
-//    String thumpPath = "d:\\thump";
-//    int scaleHeight = 200;
-////    long lStartTime = System.nanoTime();
-//
-//    File folder = new File(path);
-//    ScanDirs readDirs= new ScanDirs();
-//    readDirs.scan(folder, thumpPath, scaleHeight);
-//
-////    long lEndTime = System.nanoTime();
-////
-////    long output = lEndTime - lStartTime;
-////    System.out.println("Elapsed time in milliseconds: " + output / 1000000);
-//  }
-//}
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.RecursiveTask;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
-class ScanDirs {
+public class ScanDirs extends RecursiveTask<Boolean> {
 
-  @Autowired
-  private
-  ImageService imageService;
+  private ImageService imageService = new ImageService();
+  private KeywordsService keywordsService = new KeywordsService();
+
+  private int scaleHeightForGoogleVision, scaleHeight;
+  private String strText;
+  private String googleVisionLocalPath;
+  private File orgFolder;
+  private String orgThumpPath;
+  public ScanDirs(String folder, String thumpPath, String googleVisionLocalPath, Integer scaleHeight, Integer scaleHeightForGoogleVision, String strText ) {
+    this.googleVisionLocalPath = googleVisionLocalPath;
+    this.scaleHeight = scaleHeight;
+    this.scaleHeightForGoogleVision = scaleHeightForGoogleVision;
+    this.strText = strText;
+    this.orgFolder = new File(folder);
+    this.orgThumpPath = thumpPath;
+  }
 
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ScanDirs.class);
-  private Image image;
+  @Override
+  protected Boolean compute() {
 
-  private void scan(final File file, String thumpPath, int scaleHeight) {
+    System.out.println("orgFolder : " + orgFolder + "    ......   orgThumpPath : " + orgThumpPath);
+    File file = orgFolder;
+    String thumpPath = orgThumpPath;
+
+    Image image = imageService.findByImagePath(file.getPath());
 
     if (file.isDirectory()) {
       createDirectory(thumpPath + "/" + file.getName());
-    } else if (file.isFile()) {
-      image = new Image();
-      image.setImageName(file.getName());
-      image.setImagePath(file.getPath());
-      image.setImageAllKeywords(readImageMetadata(file.getPath(), thumpPath + "/" + file.getName()) +
-        ";" + splitName(file.getName()));
-      image.setImageType(file.getName().substring(file.getName().indexOf(".") + 1));
-      if (resize(file.getPath(), thumpPath + "/" + file.getName(), scaleHeight)) {
-        image.setImageThumpPath(thumpPath + "/" + file.getName());
+    } else if (file.isFile() && ImageProcessing.isImage(file.getPath())) {
+
+      String imageExtension = ImageProcessing.determineImageFormat(file.getPath());
+      if (image == null) {
+        if (imageExtension.equals("JPEG")) {
+           saveJPGImage(file, thumpPath);
+        } else if (imageExtension.equals("png")) {
+           savePNGImage(file, thumpPath);
+        }
+      } else if (!(new File(thumpPath + "/" + file.getName()).exists())) {
+
+        if (resize(file.getPath(), thumpPath + "/" + file.getName())) {
+          image.setImageThumpPath(thumpPath + "/" + file.getName());
+        }
+        image.setImageWatermarkPath(addTextWatermark(file.getPath(), thumpPath, file.getName()));
+
+        imageService.save(image);
+        return true;
+
+      } else if (!image.isImageHaveMetadata() && !(new File(googleVisionLocalPath + "/" + file.getName()).exists())) {
+        resizeForGoogleVision(file.getPath(), googleVisionLocalPath + "/" + file.getName());
+      } else {
+        System.out.println("have a simaler image in database with this Data   : " + file.getPath());
+
       }
-      imageService.save(image);
+
+    } else {
+      //TODO add entity for not processed files
+      System.out.println("the file not image   : " + file.getPath());
     }
 
     // Ignore files which are not files and dirs
+//    if (file.isFile()) {} else {
     if (!file.isFile()) {
       final File[] children = file.listFiles();
       if (children != null) {
         for (final File child : children) {
-          ScanDirs readDirs = new ScanDirs();
-          readDirs.scan(child, thumpPath + "/" + file.getName(), scaleHeight);
+          final ScanDirs firstWorker = new ScanDirs(child.getPath(), thumpPath + "/" + file.getName(), googleVisionLocalPath, scaleHeight, scaleHeightForGoogleVision, strText);
+          firstWorker.fork();
         }
       }
     }
+
+
+    return false;
   }
+
+
+  //TODO process png image and save to database
+  private boolean savePNGImage(File file, String thumpPath) {
+    ImageProcessing.copyPNG(file, new File(thumpPath));
+    Image image = new Image();
+    image.setImageName(file.getName());
+    image.setImagePath(file.getPath());
+    image.setImageThumpPath(thumpPath + "/" + file.getName());
+
+    try {
+      imageService.save(image);
+      return true;
+    } catch (Exception e) {
+      System.out.println(" i cant save the PNG .....  " + e.getClass());
+    }
+    return false;
+  }
+
+  private boolean saveJPGImage(File file, String thumpPath) {
+    try {
+      Image image = new Image();
+      image.setImageName(file.getName());
+      image.setImagePath(file.getPath());
+      String metadataKeywords = readImageMetadata(file.getPath(), thumpPath + "/" + file.getName());
+
+      if (metadataKeywords == "null") {
+        image.setImageHaveMetadata(false);
+        image.setImageAllKeywords(splitName(file.getName()));
+        resizeForGoogleVision(file.getPath(), googleVisionLocalPath + "/" + file.getName());
+      } else {
+        image.setImageAllKeywords(metadataKeywords + ";" + splitName(file.getName()));
+        image.setImageHaveMetadata(true);
+      }
+
+      Set<String> keywordsSet = splitKeywordsToArray(image.getImageAllKeywords(), ";");
+      keywordsSet.forEach(key -> {
+        Set<String> keySet = splitKeywordsToArray(key, ",");
+        if (keySet.size() > 1) {
+          keySet.forEach(subKey ->
+            addKeywordToImageSet(subKey, image)
+          );
+        } else {
+          addKeywordToImageSet(key, image);
+        }
+      });
+
+      image.setImageType(file.getName().substring(file.getName().indexOf(".") + 1));
+
+      if (resize(file.getPath(), thumpPath + "/" + file.getName())) {
+        image.setImageThumpPath(thumpPath + "/" + file.getName());
+      } else {
+        File isFileExist = new File(thumpPath + "/" + file.getName());
+        if (isFileExist.exists()) {
+          image.setImageThumpPath(thumpPath + "/" + file.getName());
+        }
+      }
+
+      image.setImageWatermarkPath(addTextWatermark(file.getPath(), thumpPath, file.getName()));
+
+      imageService.save(image);
+      return true;
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      return false;
+    }
+  }
+
+  private void addKeywordToImageSet(String key, Image image) {
+    Keyword keyword, keywordCheck = new Keyword();
+    Keyword fendedKeyword = keywordsService.findByKeywordEn(key.toLowerCase());
+    if (fendedKeyword != null) {
+      keyword = fendedKeyword;
+      image.getKeywords().add(keyword);
+    } else {
+      keywordCheck = image.getKeywords().stream().filter(keyword1 -> keyword1.getKeywordEn().contains(key)).findAny().orElse(null);
+      keyword = new Keyword(key.toLowerCase());
+      if (checkIfLatinLetters(key) && keywordCheck == null && !"".equals(key)) {
+        image.getKeywords().add(keyword);
+      }
+    }
+
+  }
+
 
   private String readImageMetadata(String currentImagePath, String outputImagePath) {
     if (ImageProcessing.isImage(currentImagePath)) {
@@ -80,11 +189,30 @@ class ScanDirs {
     return "null";
   }
 
-  private boolean resize(String currentImagePath, String outputImagePath, int scaleHeight) {
-    if (!Files.exists(Paths.get(outputImagePath))) {
-      return ImageProcessing.resize(currentImagePath, outputImagePath, 200);
+  private boolean resize(String currentImagePath, String outputImagePath) {
+    if (!Files.exists(Paths.get(outputImagePath)) && ImageProcessing.isImage(currentImagePath)) {
+      return ImageProcessing.resize(currentImagePath, outputImagePath, scaleHeight);
     }
     return false;
+  }
+
+  private boolean resizeForGoogleVision(String currentImagePath, String outputImagePath) {
+    if (!Files.exists(Paths.get(outputImagePath)) && ImageProcessing.isImage(currentImagePath)) {
+      boolean isCompressed = ImageProcessing.compressImageThump(currentImagePath, outputImagePath);
+      if (isCompressed) {
+        return ImageProcessing.resize(outputImagePath, outputImagePath, scaleHeightForGoogleVision);
+      } else {
+        return false;
+      }
+    }
+    return false;
+  }
+
+  private String addTextWatermark(String sourceImagePath, String destImagePath, String fileName) {
+
+    fileName = fileName.substring(0, fileName.indexOf("."));
+    fileName = fileName + "-Watermark." + sourceImagePath.substring(sourceImagePath.lastIndexOf(".") + 1);
+    return ImageProcessing.addTextWatermark(strText, sourceImagePath, destImagePath + "/" + fileName);
   }
 
   private String splitName(String fileName) {
@@ -93,7 +221,25 @@ class ScanDirs {
     return string;
   }
 
+  private Set<String> splitKeywordsToArray(String keywords, String splitCharacter) {
+    return new HashSet<>(Arrays.asList(keywords.split(splitCharacter)));
+  }
 
+  /**
+   * check if text have a Latin letters
+   */
+  private boolean checkIfLatinLetters(String key) {
+    Pattern pattern = Pattern.compile(
+      "[" +                   //начало списка допустимых символов
+        "a-zA-ZäÄöÖüÜßé" +    //буквы русского алфавита
+        "\\d" +         //цифры
+        "\\s" +         //знаки-разделители (пробел, табуляция и т.д.)
+        "\\p{Punct}" +  //знаки пунктуации
+        "]" +                   //конец списка допустимых символов
+        "*");
+    Matcher matcher = pattern.matcher(key);
+    return matcher.matches();
+  }
 
   /**
    * create Folder
@@ -110,5 +256,7 @@ class ScanDirs {
       }
     }
   }
+
+
 }
 

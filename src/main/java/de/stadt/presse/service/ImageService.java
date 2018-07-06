@@ -3,19 +3,22 @@ package de.stadt.presse.service;
 import de.stadt.presse.entity.Image;
 import de.stadt.presse.entity.Keyword;
 import de.stadt.presse.repository.ImageRepository;
-import de.stadt.presse.util.ImageProcessing;
+import de.stadt.presse.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import tmp.company.FibonacciTask;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ForkJoinPool;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,6 +31,9 @@ public class ImageService {
   @Autowired
   private KeywordsService keywordsService;
 
+  private static final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
+  private final ForkJoinPool pool = new ForkJoinPool(AVAILABLE_PROCESSORS);
+
   private int scaleHeightForGoogleVision,scaleHeight;
 
   private String strText;
@@ -36,11 +42,16 @@ public class ImageService {
     return imageRepository.save(image);
   }
 
+  public Image findByImagePath(String imagePath){ return imageRepository.findByImagePath(imagePath); }
+
   public List<Image> findAll() {
     return imageRepository.findAll();
   }
 
   private String googleVisionLocalPath;
+
+  private String orgFolder, orgThumpPath;
+
 
   public boolean scanDirs(String folderPath, String thumpPath, String googleVisionLocalPath,
                           int scaleHeight, int scaleHeightForGoogleVision, String strText) {
@@ -50,7 +61,23 @@ public class ImageService {
     this.scaleHeightForGoogleVision = scaleHeightForGoogleVision;
     this.strText = strText;
     File folder = new File(folderPath);
-    scanDirectory(folder, thumpPath);
+
+
+
+    //
+
+
+    final FibonacciTask task = new FibonacciTask(20);
+    System.out.print("Fibonacci(" + 20 + ") = ");
+    final long result = pool.invoke(task);
+    System.out.println(result);
+
+
+//    final ScanDirs task = new ScanDirs(folderPath,  thumpPath,  googleVisionLocalPath, scaleHeight,  scaleHeightForGoogleVision,  strText);
+//    final Boolean result = pool.invoke(task);
+//    System.out.println(result);
+
+//    scanDirectory(folder, thumpPath);
     return true;
   }
 //https://www.callicoder.com/hibernate-spring-boot-jpa-many-to-many-mapping-example/
@@ -148,6 +175,8 @@ public class ImageService {
       }
 
       image.setImageWatermarkPath(addTextWatermark( file.getPath(), thumpPath, file.getName()));
+
+
 
       save(image);
 
