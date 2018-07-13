@@ -5,12 +5,7 @@ import de.stadt.presse.entity.Keyword;
 import de.stadt.presse.repository.ImageRepository;
 import de.stadt.presse.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import tmp.company.FibonacciTask;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,12 +26,18 @@ public class ImageService {
   @Autowired
   private KeywordsService keywordsService;
 
+  @Autowired
+  private ScanDirs task;
+
   private static final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
   private final ForkJoinPool pool = new ForkJoinPool(AVAILABLE_PROCESSORS);
 
   private int scaleHeightForGoogleVision,scaleHeight;
 
   private String strText;
+
+  public ImageService() {
+  }
 
   public Image save(Image image) {
     return imageRepository.save(image);
@@ -53,7 +54,8 @@ public class ImageService {
   private String orgFolder, orgThumpPath;
 
 
-  public boolean scanDirs(String folderPath, String thumpPath, String googleVisionLocalPath,
+
+  public boolean callSDirs(String folderPath, String thumpPath, String googleVisionLocalPath,
                           int scaleHeight, int scaleHeightForGoogleVision, String strText) {
 
     this.googleVisionLocalPath = googleVisionLocalPath;
@@ -63,19 +65,9 @@ public class ImageService {
     File folder = new File(folderPath);
 
 
-
-    //
-
-
-    final FibonacciTask task = new FibonacciTask(20);
-    System.out.print("Fibonacci(" + 20 + ") = ");
-    final long result = pool.invoke(task);
+    task = new ScanDirs(folderPath,  thumpPath,  googleVisionLocalPath, scaleHeight,  scaleHeightForGoogleVision,  strText);
+    final Boolean result = pool.invoke(task);
     System.out.println(result);
-
-
-//    final ScanDirs task = new ScanDirs(folderPath,  thumpPath,  googleVisionLocalPath, scaleHeight,  scaleHeightForGoogleVision,  strText);
-//    final Boolean result = pool.invoke(task);
-//    System.out.println(result);
 
 //    scanDirectory(folder, thumpPath);
     return true;

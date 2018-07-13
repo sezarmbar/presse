@@ -52,7 +52,7 @@ public class ImageController {
 //                               some Text "Oldenburg"
                                @RequestParam("strText") String strText) {
     return new ResponseEntity<>(
-      imageService.scanDirs(folder,thumpPath,googleVisionLocalPath,scaleHeight,scaleHeightForGoogleVision,strText)
+      imageService.callSDirs(folder,thumpPath,googleVisionLocalPath,scaleHeight,scaleHeightForGoogleVision,strText)
       , HttpStatus.OK);
 
   }
@@ -68,7 +68,7 @@ public class ImageController {
     }
     savedRequest.setStatus(String.valueOf(HttpStatus.OK));
     requestsTableService.save(savedRequest);
-    return new ResponseEntity<>(imageService.scanDirs(requestsTable.getFolder(),requestsTable.getThumpPath(),requestsTable.getGoogleVisionLocalPath(),requestsTable.getScaleHeight(),
+    return new ResponseEntity<>(imageService.callSDirs  (requestsTable.getFolder(),requestsTable.getThumpPath(),requestsTable.getGoogleVisionLocalPath(),requestsTable.getScaleHeight(),
       requestsTable.getScaleHeightForGoogleVision(),requestsTable.getStrText()), HttpStatus.OK);
   }
 

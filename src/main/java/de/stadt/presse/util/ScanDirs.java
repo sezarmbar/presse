@@ -5,6 +5,10 @@ import de.stadt.presse.entity.Image;
 import de.stadt.presse.entity.Keyword;
 import de.stadt.presse.service.ImageService;
 import de.stadt.presse.service.KeywordsService;
+import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,17 +22,22 @@ import java.util.concurrent.RecursiveTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
+@Component
+@NoArgsConstructor
 public class ScanDirs extends RecursiveTask<Boolean> {
 
-  private ImageService imageService = new ImageService();
-  private KeywordsService keywordsService = new KeywordsService();
+  @Autowired
+  private ImageService imageService;
+  @Autowired
+  private KeywordsService keywordsService;
 
   private int scaleHeightForGoogleVision, scaleHeight;
   private String strText;
   private String googleVisionLocalPath;
   private File orgFolder;
   private String orgThumpPath;
+
+//  @Autowired
   public ScanDirs(String folder, String thumpPath, String googleVisionLocalPath, Integer scaleHeight, Integer scaleHeightForGoogleVision, String strText ) {
     this.googleVisionLocalPath = googleVisionLocalPath;
     this.scaleHeight = scaleHeight;
@@ -42,7 +51,6 @@ public class ScanDirs extends RecursiveTask<Boolean> {
   @Override
   protected Boolean compute() {
 
-    System.out.println("orgFolder : " + orgFolder + "    ......   orgThumpPath : " + orgThumpPath);
     File file = orgFolder;
     String thumpPath = orgThumpPath;
 
