@@ -3,7 +3,8 @@ package de.stadt.presse.service;
 import de.stadt.presse.entity.Image;
 import de.stadt.presse.entity.Keyword;
 import de.stadt.presse.repository.ImageRepository;
-import de.stadt.presse.util.*;
+import de.stadt.presse.util.ImageProcessing;
+import de.stadt.presse.util.ScanDirs;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +13,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,7 +36,7 @@ public class ImageService {
   private static final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
   private final ForkJoinPool pool = new ForkJoinPool(AVAILABLE_PROCESSORS);
 
-  private int scaleHeightForGoogleVision,scaleHeight;
+  private int scaleHeightForGoogleVision, scaleHeight;
 
   private String strText;
 
@@ -43,7 +47,9 @@ public class ImageService {
     return imageRepository.save(image);
   }
 
-  public Image findByImagePath(String imagePath){ return imageRepository.findByImagePath(imagePath); }
+  public Image findByImagePath(String imagePath) {
+    return imageRepository.findByImagePath(imagePath);
+  }
 
   public List<Image> findAll() {
     return imageRepository.findAll();
@@ -54,9 +60,8 @@ public class ImageService {
   private String orgFolder, orgThumpPath;
 
 
-
   public boolean callSDirs(String folderPath, String thumpPath, String googleVisionLocalPath,
-                          int scaleHeight, int scaleHeightForGoogleVision, String strText) {
+                           int scaleHeight, int scaleHeightForGoogleVision, String strText) {
 
     this.googleVisionLocalPath = googleVisionLocalPath;
     this.scaleHeight = scaleHeight;
@@ -65,11 +70,11 @@ public class ImageService {
     File folder = new File(folderPath);
 
 
-    task = new ScanDirs(folderPath,  thumpPath,  googleVisionLocalPath, scaleHeight,  scaleHeightForGoogleVision,  strText);
-    final Boolean result = pool.invoke(task);
-    System.out.println(result);
+//    task = new ScanDirs(folderPath,  thumpPath,  googleVisionLocalPath, scaleHeight,  scaleHeightForGoogleVision,  strText);
+//    final Boolean result = pool.invoke(task);
+//    System.out.println(result);
 
-//    scanDirectory(folder, thumpPath);
+    scanDirectory(folder, thumpPath);
     return true;
   }
 //https://www.callicoder.com/hibernate-spring-boot-jpa-many-to-many-mapping-example/
@@ -83,30 +88,31 @@ public class ImageService {
     } else if (file.isFile() && ImageProcessing.isImage(file.getPath())) {
 
       String imageExtension = ImageProcessing.determineImageFormat(file.getPath());
-      if ( image == null) {
-        if (imageExtension == "JPEG") {
+
+      if (image == null) {
+        System.out.println(imageExtension);
+        if (imageExtension == "JPEG" ) {
           saveJPGImage(file, thumpPath);
-        } else if (imageExtension == "png") {
-          savePNGImage(file, thumpPath);
+        } else {
+          saveCopyImage(file, thumpPath);
         }
-      }else if (!(new File(thumpPath + "/" + file.getName()).exists())){
+      } else if (!(new File(thumpPath + "/" + file.getName()).exists())) {
 
         if (resize(file.getPath(), thumpPath + "/" + file.getName())) {
           image.setImageThumpPath(thumpPath + "/" + file.getName());
         }
-        image.setImageWatermarkPath(addTextWatermark( file.getPath(), thumpPath, file.getName()));
+        image.setImageWatermarkPath(addTextWatermark(file.getPath(), thumpPath, file.getName()));
         save(image);
-      }else if(!image.isImageHaveMetadata() && !(new File(googleVisionLocalPath+"/"+file.getName()).exists())){
-        resizeForGoogleVision(file.getPath(),googleVisionLocalPath+"/"+file.getName());
-      }
-      else {
+      } else if (!image.isImageHaveMetadata() && !(new File(googleVisionLocalPath + "/" + file.getName()).exists())) {
+        resizeForGoogleVision(file.getPath(), googleVisionLocalPath + "/" + file.getName());
+      } else {
         System.out.println("have a simaler image in database with this Data   : " + file.getPath());
 
       }
 
     } else {
       //TODO add entity for not processed files
-      System.out.println("the file not image   : " + file.getPath());
+//      System.out.println("the file not image   : " + file.getPath());
     }
 
     // Ignore files which are not files and dirs
@@ -121,10 +127,28 @@ public class ImageService {
     }
   }
 
-  private boolean savePNGImage(File file, String thumpPath) {
-    ImageProcessing.copyPNG(file, new File(thumpPath));
+  private boolean saveCopyImage(File file, String thumpPath) {
 
-    return false;
+    Image image = new Image();
+    image.setImageName(file.getName());
+    image.setImagePath(file.getPath());
+
+    if (resize(file.getPath(), thumpPath + "/" + file.getName())) {
+      image.setImageThumpPath(thumpPath + "/" + file.getName());
+    } else {
+      File isFileExist = new File(thumpPath + "/" + file.getName());
+      if (isFileExist.exists()) {
+        image.setImageThumpPath(thumpPath + "/" + file.getName());
+      }
+    }
+    image.setImageWatermarkPath(addTextWatermark(file.getPath(), thumpPath, file.getName()));
+
+    ImageProcessing.copyImage(file, new File(thumpPath));
+    ImageProcessing.copyImage(file, new File(googleVisionLocalPath));
+
+    save(image);
+
+    return true;
   }
 
   private boolean saveJPGImage(File file, String thumpPath) {
@@ -166,8 +190,7 @@ public class ImageService {
         }
       }
 
-      image.setImageWatermarkPath(addTextWatermark( file.getPath(), thumpPath, file.getName()));
-
+      image.setImageWatermarkPath(addTextWatermark(file.getPath(), thumpPath, file.getName()));
 
 
       save(image);
@@ -214,16 +237,16 @@ public class ImageService {
   private boolean resizeForGoogleVision(String currentImagePath, String outputImagePath) {
     if (!Files.exists(Paths.get(outputImagePath)) && ImageProcessing.isImage(currentImagePath)) {
       boolean isCompressed = ImageProcessing.compressImageThump(currentImagePath, outputImagePath);
-      if(isCompressed){
+      if (isCompressed) {
         return ImageProcessing.resize(outputImagePath, outputImagePath, scaleHeightForGoogleVision);
-      }else {
+      } else {
         return false;
       }
     }
     return false;
   }
 
-  private String addTextWatermark( String sourceImagePath, String destImagePath, String fileName) {
+  private String addTextWatermark(String sourceImagePath, String destImagePath, String fileName) {
 
     fileName = fileName.substring(0, fileName.indexOf("."));
     fileName = fileName + "-Watermark." + sourceImagePath.substring(sourceImagePath.lastIndexOf(".") + 1);

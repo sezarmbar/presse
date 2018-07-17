@@ -8,7 +8,6 @@ import de.stadt.presse.service.KeywordsService;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
@@ -108,7 +107,7 @@ public class ScanDirs extends RecursiveTask<Boolean> {
 
   //TODO process png image and save to database
   private boolean savePNGImage(File file, String thumpPath) {
-    ImageProcessing.copyPNG(file, new File(thumpPath));
+    ImageProcessing.copyImage(file, new File(thumpPath));
     Image image = new Image();
     image.setImageName(file.getName());
     image.setImagePath(file.getPath());

@@ -1,7 +1,6 @@
 package de.stadt.presse.util;
 
 import com.drew.imaging.ImageMetadataReader;
-import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.iptc.IptcDirectory;
 
@@ -71,8 +70,9 @@ public class ImageProcessing {
       BufferedImage image = ImageIO.read(imageFile);
 
       OutputStream os = new FileOutputStream(compressedImageFile);
+      String formatName = imagePath.substring(imagePath.lastIndexOf(".") + 1);
 
-      Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpg");
+      Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName(formatName);
       ImageWriter writer = writers.next();
 
       ImageOutputStream ios = ImageIO.createImageOutputStream(os);
@@ -89,7 +89,7 @@ public class ImageProcessing {
       writer.dispose();
       return true;
     } catch (Exception e) {
-      System.out.println(" compressImageThump ..... "+ e.getClass());
+      System.out.println(" compressImageThump ..... " + e.getClass());
       return false;
     }
   }
@@ -176,13 +176,13 @@ public class ImageProcessing {
     }
   }
 
-  public static void copyPNG(File src, File dst) {
+  static int count = 0;
+
+  public static boolean copyImage(File src, File dst) {
 
     try {
-      System.out.println(src);
-      System.out.println(dst);
       InputStream in = new FileInputStream(src);
-      OutputStream out = new FileOutputStream(dst+"/"+src.getName());
+      OutputStream out = new FileOutputStream(dst + "/" + src.getName());
 
       // Transfer bytes from in to out
       byte[] buf = new byte[1024];
@@ -192,10 +192,13 @@ public class ImageProcessing {
       }
       in.close();
       out.close();
+      return true;
     } catch (Exception e) {
-      System.out.println("copyPNG ..." + e.getClass());
-    }finally {
-      System.out.println("image PNG have coped .....");
+      System.out.println("image NOT coped  ..." + e.getClass());
+      return false;
+    } finally {
+
+      System.out.printf("image %s coped to %s..... count = %d %n", src, dst, count++);
     }
 
   }
@@ -217,7 +220,7 @@ public class ImageProcessing {
       }
       // get the first reader
       ImageReader reader = iter.next();
-      String format= reader.getFormatName();
+      String format = reader.getFormatName();
       // close stream
       iis.close();
       return format;
@@ -237,6 +240,11 @@ public class ImageProcessing {
     MimetypesFileTypeMap mediatype = new MimetypesFileTypeMap();
     mediatype.addMimeTypes("image/jpeg jpeg");
     mediatype.addMimeTypes("image/png png");
+    mediatype.addMimeTypes("image/BMP BMP");
+    mediatype.addMimeTypes("image/RAW RAW");
+    mediatype.addMimeTypes("image/WEBP WEBP");
+    mediatype.addMimeTypes("image/GIF  GIF");
+    mediatype.addMimeTypes("image/ICO ICO");
     String mimetype = mediatype.getContentType(f);
     String type = mimetype.split("/")[0];
     return type.equals("image");
