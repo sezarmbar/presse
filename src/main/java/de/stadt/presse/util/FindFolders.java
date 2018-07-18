@@ -1,7 +1,16 @@
 package de.stadt.presse.util;
 
-import java.io.File;
-import java.io.IOException;
+import org.apache.commons.imaging.ImageReadException;
+import org.apache.commons.imaging.ImageWriteException;
+import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
+import org.apache.commons.io.FileUtils;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.WritableRaster;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,71 +20,21 @@ public class FindFolders {
   static int counteOrg;
   static int counteSec;
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException, ImageWriteException, ImageReadException {
 
 
-    String path = "D:\\pics\\Fotolia\\Icons\\Einzelne";
-    String pathThump = "d:\\thump";
+    File initialFile = new File("E:\\pics\\Fotolia\\Baustellen\\Bauplan_Sergey Nivens_Fotolia.jpg");
+    InputStream targetStream = FileUtils.openInputStream(initialFile);
 
+    ImageData imageData = new ImageData(targetStream);
 
-    try {
-      searchForImages(path, pathThump, 200);
-    } finally {
-      System.out.println(counteOrg);
-    }
+    imageData.resize(1000);
+
+    OutputStream outputStream = new FileOutputStream("e:\\testimage.jpg");
+    imageData.writeJPEG(outputStream);
+
 
   }
-
-  /**
-   * search for Images
-   *
-   * @param path        String root path
-   * @param thumpPath   String root thump path
-   * @param scaleHeight int
-   */
-  public static void searchForImages(String path, String thumpPath, int scaleHeight)  {
-    File folder = new File(path);
-    File[] listOfFiles = folder.listFiles();
-    if (listOfFiles != null) {
-        for (File file : listOfFiles) {
-          if (file.isDirectory()) {
-            createDirectory(thumpPath + "\\" + file.getName());
-            searchForImages(path + "\\" + file.getName(), thumpPath + "\\" + file.getName(), scaleHeight);
-          } else if (file.isFile()) {
-            String currentImagePath = path + "\\" + file.getName();
-            String outputImagePath = thumpPath + "\\" + file.getName();
-            imagePeocessing(currentImagePath, outputImagePath, scaleHeight);
-          }
-        }
-    }
-  }
-  private static void imagePeocessing(String currentImagePath, String outputImagePath, int scaleHeight) {
-    if (ImageProcessing.isImage(currentImagePath)) {
-      ImageProcessing.readImageMetadata(currentImagePath);
-      if (!Files.exists(Paths.get(outputImagePath))) {
-        counteOrg++;
-        ImageProcessing.resize(currentImagePath, outputImagePath, 200);
-      }
-    }
-  }
-
-
-  /**
-   * create Folder
-   *
-   * @param pathName: String path new Folder
-   */
-  private static void createDirectory(String pathName) {
-    Path path = Paths.get(pathName);
-    if (!Files.exists(path)) {
-      try {
-        Files.createDirectory(path);
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-    }
-  }
-
 
 }
 
