@@ -92,11 +92,13 @@
       <version>2.6</version>
     </dependency>
 
+    <!-- https://mvnrepository.com/artifact/com.github.mike10004/commons-imaging -->
     <dependency>
-      <groupId>org.apache.commons</groupId>
+      <groupId>com.github.mike10004</groupId>
       <artifactId>commons-imaging</artifactId>
-      <version>RELEASE</version>
+      <version>1.0a1</version>
     </dependency>
+
 
 
     <!-- https://mvnrepository.com/artifact/org.imgscalr/imgscalr-lib -->

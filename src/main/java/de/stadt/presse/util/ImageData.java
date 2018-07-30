@@ -14,13 +14,17 @@ import org.apache.commons.imaging.common.ImageMetadata;
 import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata;
 import org.apache.commons.imaging.formats.jpeg.exif.ExifRewriter;
 import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
+import org.apache.commons.imaging.formats.tiff.constants.MicrosoftTagConstants;
+import org.apache.commons.imaging.formats.tiff.constants.TiffDirectoryConstants;
+import org.apache.commons.imaging.formats.tiff.write.TiffOutputDirectory;
+import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
 import org.apache.commons.io.IOUtils;
 import org.imgscalr.Scalr;
-
 
 public class ImageData {
 
     private byte[] imageData;
+    private TiffOutputSet outputSet ;
 
 
     public ImageData(InputStream instream) throws IOException {
@@ -35,7 +39,13 @@ public class ImageData {
         if (image.getWidth() > maxDimension || image.getHeight() > maxDimension) {
 
             // Save existing metadata, if any
-            TiffImageMetadata metadata = readExifMetadata(imageData);
+          TiffImageMetadata metadata = readExifMetadata(imageData);
+
+//          System.out.println(metadata);
+//          System.out.println(metadata.getFieldValue(MicrosoftTagConstants.EXIF_TAG_XPKEYWORDS));
+          outputSet = metadata.getOutputSet();
+          System.out.println(outputSet.findField(MicrosoftTagConstants.EXIF_TAG_XPKEYWORDS));
+          reWriteMetadata();
             imageData = null; // allow immediate GC
 
             // resize
@@ -71,7 +81,7 @@ public class ImageData {
     private byte[] writeExifMetadata(TiffImageMetadata metadata, byte[] jpegData)
                                 throws ImageReadException, ImageWriteException, IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        new ExifRewriter().updateExifMetadataLossless(jpegData, out, metadata.getOutputSet());
+        new ExifRewriter().updateExifMetadataLossless(jpegData, out, outputSet);
         out.close();
         return out.toByteArray();
     }
@@ -90,6 +100,21 @@ public class ImageData {
 
     public synchronized void writeJPEG(OutputStream outstream) throws IOException {
         IOUtils.write(imageData,  outstream);
+
+    }
+
+    public synchronized void reWriteMetadata( ) throws ImageWriteException {
+
+      final TiffOutputDirectory exifDirectory = outputSet.getOrCreateRootDirectory();
+      exifDirectory.removeField(MicrosoftTagConstants.EXIF_TAG_XPCOMMENT);
+      exifDirectory.add(MicrosoftTagConstants.EXIF_TAG_XPCOMMENT, "SomeKind");
+
+
+//      TiffOutputDirectory exifDir = outputSet.findDirectory(TiffDirectoryConstants.DIRECTORY_TYPE_EXIF);
+//      exifDir.removeField(MicrosoftTagConstants.EXIF_TAG_XPKEYWORDS);
+//      exifDir.add(MicrosoftTagConstants.EXIF_TAG_XPKEYWORDS, "Mahmoud;goodbye;");
+////      ExifRewriter rewriter = new ExifRewriter();
+      System.out.println(outputSet.findField(MicrosoftTagConstants.EXIF_TAG_XPKEYWORDS));
 
     }
 
