@@ -5,6 +5,7 @@ import de.stadt.presse.entity.Keyword;
 import de.stadt.presse.repository.ImageRepository;
 import de.stadt.presse.util.ImageProcessing;
 import de.stadt.presse.util.ScanDirs;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,10 +14,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,9 +37,6 @@ public class ImageService {
   private int scaleHeightForGoogleVision, scaleHeight;
 
   private String strText;
-
-  public ImageService() {
-  }
 
   public Image save(Image image) {
     return imageRepository.save(image);
@@ -179,7 +174,9 @@ public class ImageService {
         }
       });
 
-      image.setImageType(file.getName().substring(file.getName().indexOf(".") + 1));
+      String fileExtension = FilenameUtils.getExtension(file.getName());
+      image.setImageType(fileExtension);
+//      image.setImageType(file.getName().substring(file.getName().indexOf(".") + 1));
 
       if (resize(file.getPath(), thumpPath + "/" + file.getName())) {
         image.setImageThumpPath(thumpPath + "/" + file.getName());
@@ -294,5 +291,17 @@ public class ImageService {
       }
     }
   }
+
+
+
+  public List<Image> findByKeywords(String[] keywordEn){
+
+    List<String> list =  Arrays.asList(keywordEn);
+
+    return imageRepository.findAllKeyword(list);
+
+  }
+
+
 
 }

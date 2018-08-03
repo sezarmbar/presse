@@ -14,6 +14,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 
 @RestController
@@ -58,6 +59,18 @@ public class ImageController {
   }
 
 
+  @GetMapping("/findByKey")
+  public ResponseEntity<List<Image>> get(@RequestParam("keywordEn") String keywordEn ){
+    System.out.println("--------------------ResponseEntity-------------------------");
+    for(String s : keywordEn.split(",")){
+      System.out.println(s);
+    }
+    System.out.println("--------------------ResponseEntity-------------------------");
+
+    return new ResponseEntity<>(imageService.findByKeywords(keywordEn.split(",")),HttpStatus.OK);
+  }
+
+
   @PostMapping("/scanreq")
   public ResponseEntity<?> post(@RequestBody RequestsTable requestsTable, BindingResult result) {
     RequestsTable savedRequest = requestsTableService.save(requestsTable);
@@ -71,5 +84,7 @@ public class ImageController {
     return new ResponseEntity<>(imageService.callSDirs  (requestsTable.getFolder(),requestsTable.getThumpPath(),requestsTable.getGoogleVisionLocalPath(),requestsTable.getScaleHeight(),
       requestsTable.getScaleHeightForGoogleVision(),requestsTable.getStrText()), HttpStatus.OK);
   }
+
+
 
 }
