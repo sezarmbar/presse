@@ -12,8 +12,10 @@ import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 public class ImageProcessing {
 //  public static void main(String[] args) throws IOException {
@@ -56,10 +58,18 @@ public class ImageProcessing {
       File image = new File(org);
       Metadata metadata = ImageMetadataReader.readMetadata(image);
       List<String> keyword = metadata.getFirstDirectoryOfType(IptcDirectory.class).getKeywords();
-      return String.join(";", keyword);
+
+      //remove duplicated values
+      Set<String> keys = new HashSet<>();
+      for (String key : keyword) {
+        keys.add(key.toLowerCase());
+      }
+
+      return String.join(";", keys);
     } catch (Exception e) {
       return "null";
     }
+
   }
 
   public static boolean compressImageThump(String imagePath, String compressedImagePath) {
@@ -176,7 +186,7 @@ public class ImageProcessing {
     }
   }
 
-  static int count = 0;
+  private static int count = 0;
 
   public static boolean copyImage(File src, File dst) {
 
