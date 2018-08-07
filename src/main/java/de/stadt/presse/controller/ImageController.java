@@ -61,13 +61,7 @@ public class ImageController {
 
   @GetMapping("/findByKey")
   public ResponseEntity<List<Image>> get(@RequestParam("keywordEn") String keywordEn ){
-    System.out.println("--------------------ResponseEntity-------------------------");
-    for(String s : keywordEn.split(",")){
-      System.out.println(s);
-    }
-    System.out.println("--------------------ResponseEntity-------------------------");
-
-    return new ResponseEntity<>(imageService.findByKeywords(keywordEn.split(",")),HttpStatus.OK);
+    return new ResponseEntity<>(imageService.findByKeywords(keywordEn),HttpStatus.OK);
   }
 
 
