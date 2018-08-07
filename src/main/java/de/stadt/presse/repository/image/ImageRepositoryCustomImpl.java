@@ -16,33 +16,20 @@ import java.util.List;
 public class ImageRepositoryCustomImpl implements ImageRepositoryCustom {
 
   @PersistenceContext
+  private
   EntityManager em;
 
   @Override
-  public List<Image> findAllKeyword(List<String> keywordEn) {
+  public List<Image> findAllKeyword(String keywordEn,Long size) {
 
 
-    StringBuffer query = new StringBuffer();
-    query.append("select i.id, i.imageThumpPath, i.imageWatermarkPath from Image i join i.keywords k where ");
+    String query = ("select i.id, i.imageThumpPath, i.imageWatermarkPath from Image i join i.keywords k " +
+      "where k.keywordEn in (" +keywordEn +") GROUP BY i.imageName HAVING count(*) = " +size);
 
-    List<String> criteria = new ArrayList<>();
-    for (String key : keywordEn) {
-      criteria.add("k.keywordEn = '"+ key+"'");
-    }
-
-    for (int i = 0; i < criteria.size(); i++) {
-      if (i > 0) {
-        query.append(" and ");
-      }
-      query.append(criteria.get(i));
-    }
-
-    Query q = em.createQuery(query.toString());
+    Query q = em.createQuery(query);
 
     return (List<Image>) q.getResultList();
 
-
   }
-
 
 }

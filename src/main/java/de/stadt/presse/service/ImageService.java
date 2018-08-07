@@ -14,7 +14,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -85,8 +88,7 @@ public class ImageService {
       String imageExtension = ImageProcessing.determineImageFormat(file.getPath());
 
       if (image == null) {
-        System.out.println(imageExtension);
-        if (imageExtension == "JPEG" ) {
+        if (imageExtension == "JPEG") {
           saveJPGImage(file, thumpPath);
         } else {
           saveCopyImage(file, thumpPath);
@@ -102,7 +104,6 @@ public class ImageService {
         resizeForGoogleVision(file.getPath(), googleVisionLocalPath + "/" + file.getName());
       } else {
         System.out.println("have a simaler image in database with this Data   : " + file.getPath());
-
       }
 
     } else {
@@ -152,7 +153,6 @@ public class ImageService {
       image.setImageName(file.getName());
       image.setImagePath(file.getPath());
       String metadataKeywords = readImageMetadata(file.getPath(), thumpPath + "/" + file.getName());
-
       if (metadataKeywords == "null") {
         image.setImageHaveMetadata(false);
         image.setImageAllKeywords(splitName(file.getName()));
@@ -293,15 +293,12 @@ public class ImageService {
   }
 
 
+  public List<Image> findByKeywords(String keywordEn) {
 
-  public List<Image> findByKeywords(String[] keywordEn){
-
-    List<String> list =  Arrays.asList(keywordEn);
-
-    return imageRepository.findAllKeyword(list);
+    List<String> list = Arrays.asList(keywordEn.split(","));
+    return imageRepository.findAllKeyword(keywordEn, Long.valueOf(list.size()));
 
   }
-
 
 
 }

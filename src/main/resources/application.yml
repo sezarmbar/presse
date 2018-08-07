@@ -7,8 +7,8 @@ spring:
     initialize: false
   jpa:
     database-platform: org.hibernate.dialect.MySQL5Dialect
-#    show-sql: true
-#    format_sql: true
+    show-sql: true
+    format_sql: true
     hibernate: # validate | update | create | create-drop
       ddl-auto: update
 logging:
