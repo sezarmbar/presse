@@ -1,6 +1,7 @@
 package de.stadt.presse.entity;
 
 import com.drew.lang.annotations.NotNull;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
@@ -45,12 +46,11 @@ public class Image {
   @Column(name = "image_watermark_path")
   private String imageWatermarkPath;
 
-  @JsonProperty
-//  @Enumerated(value=EnumType.STRING)
+  @JsonIgnore
   @Column(name = "image_type")
   private String imageType;
 
-  @JsonProperty
+  @JsonIgnore
   @Column(name = "image_all_keywords")
   @Type(type="text")
   private String imageAllKeywords;
@@ -59,19 +59,20 @@ public class Image {
   @Column(name = "image_have_metadata")
   private boolean imageHaveMetadata;
 
+  @JsonIgnore
   @Column(nullable = false)
   @Temporal(TemporalType.TIMESTAMP)
   @LastModifiedDate
-  @JsonProperty
   private Date updatedAt;
 
+  @JsonIgnore
   @Column(nullable = false, updatable = false)
   @Temporal(TemporalType.TIMESTAMP)
   @CreatedDate
-  @JsonProperty
   private Date createdAt;
 
   @ManyToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY)
+@JsonIgnore
   @JoinTable(name = "images_Keywords",
     joinColumns = { @JoinColumn(name = "image_id") },
     inverseJoinColumns = { @JoinColumn(name = "Keyword_id") })

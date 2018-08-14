@@ -23,7 +23,7 @@ public class ImageRepositoryCustomImpl implements ImageRepositoryCustom {
   public List<Image> findAllKeyword(String keywordEn,Long size) {
 
 
-    String query = ("select i.id, i.imageThumpPath, i.imageWatermarkPath from Image i join i.keywords k " +
+    String query = ("select i from Image i join i.keywords k " +
       "where k.keywordEn in (" +keywordEn +") GROUP BY i.imageName HAVING count(*) = " +size);
 
     Query q = em.createQuery(query);

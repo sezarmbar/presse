@@ -1,5 +1,8 @@
 package de.stadt.presse.service;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import de.stadt.presse.entity.Image;
 import de.stadt.presse.entity.Keyword;
 import de.stadt.presse.repository.ImageRepository;
@@ -68,14 +71,9 @@ public class ImageService {
     File folder = new File(folderPath);
 
 
-//    task = new ScanDirs(folderPath,  thumpPath,  googleVisionLocalPath, scaleHeight,  scaleHeightForGoogleVision,  strText);
-//    final Boolean result = pool.invoke(task);
-//    System.out.println(result);
-
     scanDirectory(folder, thumpPath);
     return true;
   }
-//https://www.callicoder.com/hibernate-spring-boot-jpa-many-to-many-mapping-example/
 
   private void scanDirectory(final File file, String thumpPath) {
 
