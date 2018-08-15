@@ -3,6 +3,7 @@ package de.stadt.presse.util;
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.iptc.IptcDirectory;
+import org.apache.commons.io.FilenameUtils;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.imageio.*;
@@ -112,7 +113,7 @@ public class ImageProcessing {
    * @param sourceImagePath : Original image
    * @param destImagePath   : where to write processed image
    */
-  public static String addTextWatermark(String text, String sourceImagePath, String destImagePath) {
+  public static boolean addTextWatermark(String text, String sourceImagePath, String destImagePath) {
     try {
       File sourceImageFile = new File(sourceImagePath);
       File destImageFile = new File(destImagePath);
@@ -134,17 +135,19 @@ public class ImageProcessing {
 
       // paints the textual watermark
       g2d.drawString(text, centerX, centerY);
-      String formatName = sourceImagePath.substring(sourceImagePath.lastIndexOf(".") + 1);
 
-      ImageIO.write(sourceImage, formatName, destImageFile);
+//      String formatName = sourceImagePath.substring(sourceImagePath.lastIndexOf(".") + 1);
+      String fileExtension = FilenameUtils.getExtension(new File(sourceImagePath).getName());
+
+      ImageIO.write(sourceImage, fileExtension, destImageFile);
       g2d.dispose();
 
-      return destImageFile.getPath();
+      return true;
 
     } catch (Exception ex) {
       //TODO java.lang.NullPointerException
       System.out.println("sourceImagePath   : " + sourceImagePath + "destImagePath  : " + destImagePath + " .... " + ex.getClass());
-      return "null";
+      return false;
     }
   }
 

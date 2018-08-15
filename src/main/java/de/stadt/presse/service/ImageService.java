@@ -46,7 +46,7 @@ public class ImageService {
     return imageRepository.findByImagePath(imagePath);
   }
 
-  public Optional<Image> findById(Long id){
+  public Optional<Image> findById(Long id) {
     return imageRepository.findById(id);
   }
 
@@ -57,7 +57,7 @@ public class ImageService {
   private String googleVisionLocalPath;
 
   private String orgFolder, orgThumpPath;
-
+  private final String IMAGWATERMARK = "-Watermark.";
 
   public boolean callSDirs(String folderPath, String thumpPath, String googleVisionLocalPath,
                            int scaleHeight, int scaleHeightForGoogleVision, String strText) {
@@ -94,8 +94,9 @@ public class ImageService {
         if (resize(file.getPath(), thumpPath + "/" + file.getName())) {
           image.setImageThumpPath(thumpPath);
         }
-        image.setImageWatermarkName(addTextWatermark(file.getPath(), thumpPath, file.getName()));
+        setImageWatermarkName(image, file, thumpPath);
         save(image);
+
       } else if (!image.isImageHaveMetadata() && !(new File(googleVisionLocalPath + "/" + file.getName()).exists())) {
         resizeForGoogleVision(file.getPath(), googleVisionLocalPath + "/" + file.getName());
       } else {
@@ -125,18 +126,21 @@ public class ImageService {
     image.setImageName(file.getName());
     image.setImagePath(file.getPath());
 
-    if (resize(file.getPath(), thumpPath + "/" + file.getName())) {
+    String outputImagePath = thumpPath + "/" + file.getName();
+    if (new File(outputImagePath).exists()) {
       image.setImageThumpPath(thumpPath);
-    } else {
-      File isFileExist = new File(thumpPath + "/" + file.getName());
-      if (isFileExist.exists()) {
-        image.setImageThumpPath(thumpPath);
-      }
+    } else if (resize(file.getPath(), outputImagePath)) {
+      image.setImageThumpPath(thumpPath);
     }
-    image.setImageWatermarkName(addTextWatermark(file.getPath(), thumpPath, file.getName()));
 
-    ImageProcessing.copyImage(file, new File(thumpPath));
-    ImageProcessing.copyImage(file, new File(googleVisionLocalPath));
+    setImageWatermarkName(image, file, thumpPath);
+
+    if (!new File(thumpPath + "/" + file.getName()).exists()) {
+      ImageProcessing.copyImage(file, new File(thumpPath));
+    }
+    if (!new File(googleVisionLocalPath + "/" + file.getName()).exists()) {
+      ImageProcessing.copyImage(file, new File(googleVisionLocalPath));
+    }
 
     save(image);
 
@@ -172,19 +176,15 @@ public class ImageService {
 
       String fileExtension = FilenameUtils.getExtension(file.getName());
       image.setImageType(fileExtension);
-//      image.setImageType(file.getName().substring(file.getName().indexOf(".") + 1));
 
-      if (resize(file.getPath(), thumpPath + "/" + file.getName())) {
-        image.setImageThumpPath(thumpPath );
-      } else {
-        File isFileExist = new File(thumpPath + "/" + file.getName());
-        if (isFileExist.exists()) {
-          image.setImageThumpPath(thumpPath );
-        }
+      String outputImagePath = thumpPath + "/" + file.getName();
+      if (new File(outputImagePath).exists()) {
+        image.setImageThumpPath(thumpPath);
+      } else if (resize(file.getPath(), outputImagePath)) {
+        image.setImageThumpPath(thumpPath);
       }
 
-      image.setImageWatermarkName(addTextWatermark(file.getPath(), thumpPath, file.getName()));
-
+      setImageWatermarkName(image, file, thumpPath);
 
       save(image);
 
@@ -193,6 +193,16 @@ public class ImageService {
     } catch (Exception e) {
       e.printStackTrace();
       return false;
+    }
+  }
+
+  private void setImageWatermarkName(Image image, File file, String thumpPath) {
+    String newFileName = changeImageNameForWatermark(file.getName());
+
+    if (new File(thumpPath + "/" + newFileName).exists()) {
+      image.setImageWatermarkName(newFileName);
+    } else if (addTextWatermark(file.getPath(), thumpPath, newFileName)) {
+      image.setImageWatermarkName(newFileName);
     }
   }
 
@@ -239,12 +249,20 @@ public class ImageService {
     return false;
   }
 
-  private String addTextWatermark(String sourceImagePath, String destImagePath, String fileName) {
+  private boolean addTextWatermark(String sourceImagePath, String destImagePath, String fileName) {
 
+//    fileName = fileName.substring(0, fileName.indexOf("."));
+//    fileName = fileName + IMAGWATERMARK + sourceImagePath.substring(sourceImagePath.lastIndexOf(".") + 1);
+
+    return ImageProcessing.addTextWatermark(strText, sourceImagePath, destImagePath + "/" + fileName);
+
+
+  }
+
+  private String changeImageNameForWatermark(String fileName) {
+    String fileExtension = FilenameUtils.getExtension(new File(fileName).getName());
     fileName = fileName.substring(0, fileName.indexOf("."));
-    fileName = fileName + "-Watermark." + sourceImagePath.substring(sourceImagePath.lastIndexOf(".") + 1);
-    ImageProcessing.addTextWatermark(strText, sourceImagePath, destImagePath + "/" + fileName);
-    return fileName;
+    return fileName + IMAGWATERMARK + fileExtension;
   }
 
   private String splitName(String fileName) {
