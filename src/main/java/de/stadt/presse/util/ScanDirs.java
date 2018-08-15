@@ -71,7 +71,7 @@ public class ScanDirs extends RecursiveTask<Boolean> {
         if (resize(file.getPath(), thumpPath + "/" + file.getName())) {
           image.setImageThumpPath(thumpPath + "/" + file.getName());
         }
-        image.setImageWatermarkPath(addTextWatermark(file.getPath(), thumpPath, file.getName()));
+        image.setImageWatermarkName(addTextWatermark(file.getPath(), thumpPath, file.getName()));
 
         imageService.save(image);
         return true;
@@ -161,7 +161,7 @@ public class ScanDirs extends RecursiveTask<Boolean> {
         }
       }
 
-      image.setImageWatermarkPath(addTextWatermark(file.getPath(), thumpPath, file.getName()));
+      image.setImageWatermarkName(addTextWatermark(file.getPath(), thumpPath, file.getName()));
 
       imageService.save(image);
       return true;

@@ -43,8 +43,8 @@ public class Image {
   private String imageThumpPath;
 
   @JsonProperty
-  @Column(name = "image_watermark_path")
-  private String imageWatermarkPath;
+  @Column(name = "image_watermark_name")
+  private String imageWatermarkName;
 
   @JsonIgnore
   @Column(name = "image_type")

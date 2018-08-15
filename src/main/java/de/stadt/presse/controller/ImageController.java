@@ -7,14 +7,22 @@ import de.stadt.presse.entity.RequestsTable;
 import de.stadt.presse.repository.RequestsTableRepository;
 import de.stadt.presse.service.ImageService;
 import de.stadt.presse.service.RequestsTableService;
+import de.stadt.presse.service.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -26,12 +34,20 @@ public class ImageController {
   ImageService imageService;
 
   @Autowired
+    private
+  StorageService storageService;
+
+  @Autowired
   private
   RequestsTableService requestsTableService;
 
   @Autowired
   private
   RequestsTableRepository requestsTableRepository;
+
+
+
+
 
   @PostMapping("/insert")
   public Image insert(@Valid @RequestBody Image image) {
@@ -59,11 +75,6 @@ public class ImageController {
   }
 
 
-  @GetMapping("/findByKey")
-  public ResponseEntity<List<Image>> get(@RequestParam("keywordEn") String keywordEn ){
-    List<Image> images = imageService.findByKeywords(keywordEn);
-    return new ResponseEntity<List<Image>>(images,HttpStatus.OK);
-  }
 
 
   @PostMapping("/scanreq")
@@ -80,6 +91,40 @@ public class ImageController {
       requestsTable.getScaleHeightForGoogleVision(),requestsTable.getStrText()), HttpStatus.OK);
   }
 
+  @GetMapping("/findByKey")
+  public ResponseEntity<List<Image>> get(@RequestParam("keywordEn") String keywordEn ){
+    System.out.println("searching for images......");
+    List<Image> images = imageService.findByKeywords(keywordEn);
+    return new ResponseEntity<List<Image>>(images,HttpStatus.OK);
+  }
+
+//
+//  @GetMapping("/getallfiles")
+//  public ResponseEntity<List<String>> getListFiles(Model model) {
+//    List<String> fileNames = files
+//      .stream().map(fileName -> MvcUriComponentsBuilder
+//        .fromMethodName(ImageController.class, "getFile", path ,fileName).build().toString())
+//      .collect(Collectors.toList());
+//    System.out.println();
+//
+//    return ResponseEntity.ok().body(fileNames);
+//  }
+
+  @GetMapping("/files/{id:.+}")
+  @ResponseBody
+  public ResponseEntity<Resource> getFile( @PathVariable("id") Long id){
+    Optional<Image> image = imageService.findById(id);
+    Image existImage = null;
+    if(image.isPresent()){
+      existImage = image.get();
+      System.out.println(existImage);
+    Resource file = storageService.loadFile(existImage.getImageThumpPath(),existImage.getImageName());
+    return ResponseEntity.ok()
+      .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
+      .body(file);
+    }
+    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+  }
 
 
 }

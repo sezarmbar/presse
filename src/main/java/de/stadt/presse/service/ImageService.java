@@ -1,8 +1,5 @@
 package de.stadt.presse.service;
 
-import com.fasterxml.jackson.annotation.JsonView;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import de.stadt.presse.entity.Image;
 import de.stadt.presse.entity.Keyword;
 import de.stadt.presse.repository.ImageRepository;
@@ -17,10 +14,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -50,6 +44,10 @@ public class ImageService {
 
   public Image findByImagePath(String imagePath) {
     return imageRepository.findByImagePath(imagePath);
+  }
+
+  public Optional<Image> findById(Long id){
+    return imageRepository.findById(id);
   }
 
   public List<Image> findAll() {
@@ -94,9 +92,9 @@ public class ImageService {
       } else if (!(new File(thumpPath + "/" + file.getName()).exists())) {
 
         if (resize(file.getPath(), thumpPath + "/" + file.getName())) {
-          image.setImageThumpPath(thumpPath + "/" + file.getName());
+          image.setImageThumpPath(thumpPath);
         }
-        image.setImageWatermarkPath(addTextWatermark(file.getPath(), thumpPath, file.getName()));
+        image.setImageWatermarkName(addTextWatermark(file.getPath(), thumpPath, file.getName()));
         save(image);
       } else if (!image.isImageHaveMetadata() && !(new File(googleVisionLocalPath + "/" + file.getName()).exists())) {
         resizeForGoogleVision(file.getPath(), googleVisionLocalPath + "/" + file.getName());
@@ -128,14 +126,14 @@ public class ImageService {
     image.setImagePath(file.getPath());
 
     if (resize(file.getPath(), thumpPath + "/" + file.getName())) {
-      image.setImageThumpPath(thumpPath + "/" + file.getName());
+      image.setImageThumpPath(thumpPath);
     } else {
       File isFileExist = new File(thumpPath + "/" + file.getName());
       if (isFileExist.exists()) {
-        image.setImageThumpPath(thumpPath + "/" + file.getName());
+        image.setImageThumpPath(thumpPath);
       }
     }
-    image.setImageWatermarkPath(addTextWatermark(file.getPath(), thumpPath, file.getName()));
+    image.setImageWatermarkName(addTextWatermark(file.getPath(), thumpPath, file.getName()));
 
     ImageProcessing.copyImage(file, new File(thumpPath));
     ImageProcessing.copyImage(file, new File(googleVisionLocalPath));
@@ -177,15 +175,15 @@ public class ImageService {
 //      image.setImageType(file.getName().substring(file.getName().indexOf(".") + 1));
 
       if (resize(file.getPath(), thumpPath + "/" + file.getName())) {
-        image.setImageThumpPath(thumpPath + "/" + file.getName());
+        image.setImageThumpPath(thumpPath );
       } else {
         File isFileExist = new File(thumpPath + "/" + file.getName());
         if (isFileExist.exists()) {
-          image.setImageThumpPath(thumpPath + "/" + file.getName());
+          image.setImageThumpPath(thumpPath );
         }
       }
 
-      image.setImageWatermarkPath(addTextWatermark(file.getPath(), thumpPath, file.getName()));
+      image.setImageWatermarkName(addTextWatermark(file.getPath(), thumpPath, file.getName()));
 
 
       save(image);
@@ -245,7 +243,8 @@ public class ImageService {
 
     fileName = fileName.substring(0, fileName.indexOf("."));
     fileName = fileName + "-Watermark." + sourceImagePath.substring(sourceImagePath.lastIndexOf(".") + 1);
-    return ImageProcessing.addTextWatermark(strText, sourceImagePath, destImagePath + "/" + fileName);
+    ImageProcessing.addTextWatermark(strText, sourceImagePath, destImagePath + "/" + fileName);
+    return fileName;
   }
 
   private String splitName(String fileName) {
