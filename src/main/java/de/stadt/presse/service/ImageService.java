@@ -84,7 +84,8 @@ public class ImageService {
       String imageExtension = ImageProcessing.determineImageFormat(file.getPath());
 
       if (image == null) {
-        if (imageExtension == "JPEG") {
+//        if (imageExtension == "JPEG" ){
+        if (Objects.equals(imageExtension, "JPEG")){
           saveJPGImage(file, thumpPath);
         } else {
           saveCopyImage(file, thumpPath);
@@ -103,10 +104,13 @@ public class ImageService {
         System.out.println("have a simaler image in database with this Data   : " + file.getPath());
       }
 
-    } else {
+    }
+//    else {
       //TODO add entity for not processed files
 //      System.out.println("the file not image   : " + file.getPath());
-    }
+//    }
+
+    //TODO handle errore keywordEN notblanck
 
     // Ignore files which are not files and dirs
 //    if (file.isFile()) {} else {
@@ -153,7 +157,7 @@ public class ImageService {
       image.setImageName(file.getName());
       image.setImagePath(file.getPath());
       String metadataKeywords = readImageMetadata(file.getPath(), thumpPath + "/" + file.getName());
-      if (metadataKeywords == "null") {
+      if (metadataKeywords.equalsIgnoreCase("null")) {
         image.setImageHaveMetadata(false);
         image.setImageAllKeywords(splitName(file.getName()));
         resizeForGoogleVision(file.getPath(), googleVisionLocalPath + "/" + file.getName());
@@ -207,7 +211,7 @@ public class ImageService {
   }
 
   private void addKeywordToImageSet(String key, Image image) {
-    Keyword keyword, keywordCheck = new Keyword();
+    Keyword keyword, keywordCheck ;
     Keyword fendedKeyword = keywordsService.findByKeywordEn(key.toLowerCase());
     if (fendedKeyword != null) {
       keyword = fendedKeyword;
@@ -308,10 +312,10 @@ public class ImageService {
   }
 
 
-  public List<Image> findByKeywords(String keywordEn) {
+  public List findByKeywords(String keywordEn) {
 
     List<String> list = Arrays.asList(keywordEn.split(","));
-    return imageRepository.findAllKeyword(keywordEn, Long.valueOf(list.size()));
+    return imageRepository.findAllKeyword(keywordEn, (long) list.size());
 
   }
 
