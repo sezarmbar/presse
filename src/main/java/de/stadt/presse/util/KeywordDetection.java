@@ -26,15 +26,21 @@ public class KeywordDetection {
 
     private static Set<String> keywords = new HashSet<>();
 
+  public KeywordDetection() { }
 
-    public static void main(String[] args) throws IOException, GeneralSecurityException {
+
+  public static void main(String[] args) throws IOException, GeneralSecurityException {
 
         Path imagePath = Paths.get("data\\cat3.png");
-        startDetection(imagePath);
+        KeywordDetection keywordDetection = new KeywordDetection();
+        keywordDetection.startDetection(imagePath);
 
     }
 
-    private static void startDetection(Path imagePath) throws IOException, GeneralSecurityException {
+
+
+
+    private void startDetection(Path imagePath) throws IOException, GeneralSecurityException {
 
         KeywordDetection app = new KeywordDetection(getVisionService());
         AnnotateImageResponse allAnnotation = app.labelImage(imagePath);
@@ -122,7 +128,8 @@ public class KeywordDetection {
     }
 
 
-    private final Vision vision;
+    private  Vision vision;
+//    private final Vision vision;
 
 
     private KeywordDetection(Vision vision) {
