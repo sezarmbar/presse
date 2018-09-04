@@ -167,16 +167,18 @@ public class ImageService {
       }
 
       Set<String> keywordsSet = splitKeywordsToArray(image.getImageAllKeywords(), ";");
-      keywordsSet.forEach(key -> {
-        Set<String> keySet = splitKeywordsToArray(key, ",");
-        if (keySet.size() > 1) {
-          keySet.forEach(subKey ->
-            addKeywordToImageSet(subKey, image)
-          );
-        } else {
-          addKeywordToImageSet(key, image);
-        }
-      });
+      addKeywordsForEach(keywordsSet,image);
+
+//      keywordsSet.forEach(key -> {
+//        Set<String> keySet = splitKeywordsToArray(key, ",");
+//        if (keySet.size() > 1) {
+//          keySet.forEach(subKey ->
+//            addKeywordToImageSet(subKey, image)
+//          );
+//        } else {
+//          addKeywordToImageSet(key, image);
+//        }
+//      });
 
       String fileExtension = FilenameUtils.getExtension(file.getName());
       image.setImageType(fileExtension);
@@ -200,14 +202,18 @@ public class ImageService {
     }
   }
 
-  private void setImageWatermarkName(Image image, File file, String thumpPath) {
-    String newFileName = changeImageNameForWatermark(file.getName());
+  public void addKeywordsForEach(Set<String> keywordsSet, Image image ){
+    keywordsSet.forEach(key -> {
+      Set<String> keySet = splitKeywordsToArray(key, ",");
+      if (keySet.size() > 1) {
+        keySet.forEach(subKey ->
+          addKeywordToImageSet(subKey, image)
+        );
+      } else {
+        addKeywordToImageSet(key, image);
+      }
+    });
 
-    if (new File(thumpPath + "/" + newFileName).exists()) {
-      image.setImageWatermarkName(newFileName);
-    } else if (addTextWatermark(file.getPath(), thumpPath, newFileName)) {
-      image.setImageWatermarkName(newFileName);
-    }
   }
 
   private void addKeywordToImageSet(String key, Image image) {
@@ -224,6 +230,16 @@ public class ImageService {
       }
     }
 
+  }
+
+  private void setImageWatermarkName(Image image, File file, String thumpPath) {
+    String newFileName = changeImageNameForWatermark(file.getName());
+
+    if (new File(thumpPath + "/" + newFileName).exists()) {
+      image.setImageWatermarkName(newFileName);
+    } else if (addTextWatermark(file.getPath(), thumpPath, newFileName)) {
+      image.setImageWatermarkName(newFileName);
+    }
   }
 
 
