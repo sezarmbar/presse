@@ -26,7 +26,7 @@ public class GoogleVisionService {
   @Autowired
   private ImageRepository imageRepository;
 
-  private String googleVisonFileLocation = "D:\\googleVision\\";
+  private static final String googleVisionFileLocation = "D:\\googleVision\\";
 
   private Set<String> keywords = new HashSet<>();
 
@@ -41,7 +41,7 @@ public class GoogleVisionService {
 
   public void forEachImage() {
     images.forEach(image -> {
-      getKeywords(googleVisonFileLocation + image.getImageName(),image);
+      getKeywords(googleVisionFileLocation + image.getImageName(),image);
     });
   }
 
